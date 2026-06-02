@@ -1,0 +1,1 @@
+"Place your reference PDF files in this directory. The benchmark will extract text from them."

@@ -1,0 +1,516 @@
+=== FULL BENCHMARK THOUGHT PROCESS LOGS (FRANKENSTEIN MODE) ===
+
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 2 (CoT: Auto-Mechanism) [TEXT MODE] | ITERATION: 1
+--------------------------------------------------------------------------------
+The reaction proceeds via a Pd(II)/Pd(IV) mechanism where the weakly coordinating native amide directs Pd insertion into the beta-C(sp3)-H bond, followed by oxidation with Selectfluor and subsequent C-F reductive elimination. Bidentate monoanionic 6-hydroxypicolinamide ligands are crucial for accelerating this C-H cleavage and stabilizing the high-valent Pd intermediates. Increasing the steric bulk on the amide moiety of the ligand (e.g., N,N-di-sec-butyl or N,N-diisopropyl) enhances the reaction efficiency and selectivity by preventing off-target coordination and promoting reductive elimination, making them the top-performing catalysts compared to simple 2-hydroxypyridines or unliganded conditions.
+
+[SCORES]
+Catalyst_f52040 | 10.0, Catalyst_929a39 | 15.0, Catalyst_2a3d60 | 45.0, Catalyst_b1654c | 55.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 50.0, Catalyst_5909e1 | 20.0, Catalyst_203b97 | 75.0, Catalyst_bcdfbf | 40.0, Catalyst_395daf | 15.0, Catalyst_84a2cc | 85.0, Catalyst_9fb2b4 | 30.0, Catalyst_1c1eeb | 90.0, Catalyst_398a04 | 15.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 35.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 80.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 3 (CoT: Mechanism -> Properties) [TEXT MODE] | ITERATION: 1
+--------------------------------------------------------------------------------
+The reaction involves palladium-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides. This transformation requires a bidentate ligand capable of coordinating to palladium while facilitating C-H cleavage and subsequent fluorination with Selectfluor. 2-Hydroxypyridine-6-carboxamides are highly effective for this purpose, as the 2-pyridone motif coordinates to Pd and acts as an internal base, while the carboxamide provides steric bulk to promote reductive elimination and prevent catalyst deactivation. Bulky N,N-dialkyl substituents, such as diisopropyl or di-sec-butyl groups, are optimal for maximizing both reactivity and site-selectivity. Consequently, bulky 6-hydroxypicolinamides receive the highest scores, whereas unhindered or non-pyridone ligands score poorly.
+
+[SCORES]
+Catalyst_f52040 | 10.0, Catalyst_929a39 | 15.0, Catalyst_2a3d60 | 45.0, Catalyst_b1654c | 55.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 40.0, Catalyst_5909e1 | 15.0, Catalyst_203b97 | 60.0, Catalyst_bcdfbf | 35.0, Catalyst_395daf | 10.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 30.0, Catalyst_1c1eeb | 95.0, Catalyst_398a04 | 10.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 25.0, Catalyst_db28dd | 85.0, Catalyst_7855a1 | 65.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 1 (Zero-Shot) [TEXT MODE] | ITERATION: 1
+--------------------------------------------------------------------------------
+The reaction involves palladium-catalyzed C(sp3)-H fluorination of native amides, which is highly dependent on bidentate 2-hydroxypyridine-based ligands. 6-Hydroxypicolinamides are exceptionally effective because they coordinate to palladium and facilitate C-H cleavage while their steric bulk promotes the challenging C-F reductive elimination. Increasing the steric bulk on the amide nitrogen (e.g., N,N-di-sec-butyl or N,N-diisopropyl) significantly enhances the reaction efficiency and selectivity by preventing catalyst deactivation and favoring the desired geometry. Consequently, bulky dialkyl picolinamides receive the highest scores, simpler or less sterically demanding hydroxypyridines score moderately, and non-ligated or irrelevant controls score near zero.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 25.0, Catalyst_b1654c | 45.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 35.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 55.0, Catalyst_bcdfbf | 10.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 20.0, Catalyst_1c1eeb | 85.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 0.0, Catalyst_c5fe00 | 15.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 65.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 5 (Paper Context Zero-Shot) [JSON MODE] | ITERATION: 1
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "For the Pd-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides using Selectfluor, 2-pyridone ligands bearing an amide group at the 6-position are highly effective. The 2-pyridone core coordinates to Pd, while the 6-amide group provides crucial steric bulk that stabilizes the active Pd(IV) intermediate and facilitates the challenging C-F reductive elimination. Increasing the steric bulk on the 6-amide nitrogen (e.g., di-sec-butyl > diisopropyl > diethyl > dimethyl) significantly enhances catalytic efficacy by preventing catalyst deactivation and promoting the desired reductive elimination. Other ligand classes, such as mono-protected amino acids (MPAAs) or simple 2-pyridones, lack this specific steric environment and perform poorly.",
+  "scores": {
+    "Catalyst_f52040": 1.0,
+    "Catalyst_929a39": 2.0,
+    "Catalyst_2a3d60": 18.0,
+    "Catalyst_b1654c": 5.0,
+    "Catalyst_413842": 2.0,
+    "Catalyst_8a1819": 5.0,
+    "Catalyst_5909e1": 3.0,
+    "Catalyst_203b97": 25.0,
+    "Catalyst_bcdfbf": 10.0,
+    "Catalyst_395daf": 2.0,
+    "Catalyst_84a2cc": 55.0,
+    "Catalyst_9fb2b4": 15.0,
+    "Catalyst_1c1eeb": 82.0,
+    "Catalyst_398a04": 3.0,
+    "Catalyst_4cc26b": 1.0,
+    "Catalyst_c5fe00": 8.0,
+    "Catalyst_db28dd": 88.5,
+    "Catalyst_7855a1": 35.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 2 (CoT: Auto-Mechanism) [TEXT MODE] | ITERATION: 2
+--------------------------------------------------------------------------------
+The mechanism proceeds via a Pd(II)/Pd(IV) catalytic cycle involving ligand-enabled C(sp3)-H activation followed by oxidation with Selectfluor and C-F reductive elimination. Bidentate 2-hydroxypyridine/2-pyridone ligands bearing 6-position carboxamides are crucial for coordinating Pd and accelerating the C-H cleavage of weakly coordinating native amides. Bulky dialkylamide substituents at the 6-position (e.g., diisopropyl or di-sec-butyl) provide optimal steric bulk to enforce the reactive conformation and prevent catalyst deactivation, yielding the highest efficiency. Simple 2-hydroxypyridines, amino acids, or reactions without ligands fail to promote this challenging transformation effectively.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 15.0, Catalyst_2a3d60 | 35.0, Catalyst_b1654c | 45.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 30.0, Catalyst_5909e1 | 12.0, Catalyst_203b97 | 65.0, Catalyst_bcdfbf | 20.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 25.0, Catalyst_1c1eeb | 92.0, Catalyst_398a04 | 10.0, Catalyst_4cc26b | 1.0, Catalyst_c5fe00 | 15.0, Catalyst_db28dd | 88.0, Catalyst_7855a1 | 60.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 4 (Supplied Mechanism -> Properties) [TEXT MODE] | ITERATION: 1
+--------------------------------------------------------------------------------
+- MECHANISM RULE: A bidentate ligand is required to stabilize the cationic Pd(II) center and facilitate the rate-determining CMD step. Pyridine-pyridone ligands with bulky quaternary linkers provide optimal steric hindrance to promote the challenging oxidative addition of Selectfluor and subsequent C-F reductive elimination.
+- LIGAND CLASSIFICATION: Good: Pyridine-pyridone ligands with bulky quaternary linkers (e.g., Catalyst_b1654c) provide the ideal steric environment for high reactivity and selectivity. Average: Other bidentate ligands like quinoline-pyridones or 2-hydroxypyridines with bulky 6-substituents (e.g., Catalyst_8a1819, Catalyst_203b97, Catalyst_1c1eeb, Catalyst_db28dd) offer moderate stabilization and steric bulk. Poor: Simple 2-hydroxypyridines, unhindered 6-substituted derivatives, simple amides, and the absence of a ligand (e.g., Catalyst_bcdfbf, Catalyst_7855a1, Catalyst_4cc26b) fail to adequately stabilize the Pd center or promote the necessary steps.
+
+[SCORES]
+Catalyst_f52040 | 1.0, Catalyst_929a39 | 1.0, Catalyst_2a3d60 | 15.0, Catalyst_b1654c | 95.0, Catalyst_413842 | 1.0, Catalyst_8a1819 | 65.0, Catalyst_5909e1 | 1.0, Catalyst_203b97 | 55.0, Catalyst_bcdfbf | 8.0, Catalyst_395daf | 1.0, Catalyst_84a2cc | 30.0, Catalyst_9fb2b4 | 10.0, Catalyst_1c1eeb | 45.0, Catalyst_398a04 | 1.0, Catalyst_4cc26b | 2.0, Catalyst_c5fe00 | 5.0, Catalyst_db28dd | 40.0, Catalyst_7855a1 | 20.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 1 (Zero-Shot) [TEXT MODE] | ITERATION: 2
+--------------------------------------------------------------------------------
+The reaction involves palladium-catalyzed beta-C(sp3)-H fluorination of native amides using Selectfluor, which is significantly accelerated by 2-pyridone ligands. The optimal ligands for this transformation are typically 6-substituted 2-pyridones bearing bulky amide groups, which facilitate the C-H cleavage and prevent catalyst deactivation. Ligands with highly sterically demanding amides, such as N,N-di-sec-butyl or N,N-diisopropyl amides at the 6-position (e.g., Catalyst_db28dd and Catalyst_1c1eeb), provide the highest yields and selectivities. Less bulky amides (diethyl, dimethyl) or simple 2-pyridones show moderate to low activity. Non-pyridone ligands and the absence of a ligand result in negligible product formation due to the lack of necessary coordination and acceleration.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 30.0, Catalyst_b1654c | 40.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 35.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 50.0, Catalyst_bcdfbf | 15.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 25.0, Catalyst_1c1eeb | 88.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 0.0, Catalyst_c5fe00 | 20.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 65.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 3 (CoT: Mechanism -> Properties) [TEXT MODE] | ITERATION: 2
+--------------------------------------------------------------------------------
+The reaction involves a palladium-catalyzed, ligand-accelerated beta-C(sp3)-H fluorination of native amides using Selectfluor. This transformation requires a bidentate ligand capable of stabilizing the high-valent Pd(IV)-F intermediate while promoting C-H cleavage. 2-Hydroxypyridine (or 2-pyridone) derivatives bearing bulky substituents at the 6-position are highly effective for this purpose. Specifically, ligands with a gem-dimethyl group and an amide moiety at the 6-position, such as 2-(6-hydroxypyridin-2-yl)-2-methyl-N,N-diethylpropanamide, provide optimal steric bulk and electronic properties to facilitate both the C-H activation and the challenging C-F reductive elimination, ensuring high stereo- and site-selectivity. Other 2-hydroxypyridines show moderate to low activity depending on their steric profiles.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 30.0, Catalyst_b1654c | 40.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 20.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 95.0, Catalyst_bcdfbf | 15.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 45.0, Catalyst_9fb2b4 | 25.0, Catalyst_1c1eeb | 65.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 1.0, Catalyst_c5fe00 | 10.0, Catalyst_db28dd | 75.0, Catalyst_7855a1 | 35.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 1 (Zero-Shot) [TEXT MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+The reaction utilizes a palladium catalyst with 2-hydroxypyridine-based ligands to achieve beta-C(sp3)-H fluorination of native amides. The presence of a bulky amide substituent at the 6-position of the 2-hydroxypyridine core is crucial for promoting the challenging C-H cleavage and subsequent fluorination steps while preventing catalyst deactivation. Ligands with highly sterically demanding groups, such as N,N-di-sec-butyl or N,N-diisopropyl amides (e.g., Catalyst_db28dd and Catalyst_1c1eeb), provide the highest yields and selectivities. Less bulky amides, simple 2-hydroxypyridines, or bidentate amino acid derivatives exhibit significantly lower efficiency, and the absence of a ligand results in minimal product formation.
+
+[SCORES]
+Catalyst_f52040 | 10.0, Catalyst_929a39 | 15.0, Catalyst_2a3d60 | 45.0, Catalyst_b1654c | 50.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 35.0, Catalyst_5909e1 | 15.0, Catalyst_203b97 | 60.0, Catalyst_bcdfbf | 30.0, Catalyst_395daf | 10.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 40.0, Catalyst_1c1eeb | 85.0, Catalyst_398a04 | 15.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 20.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 65.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 5 (Paper Context Zero-Shot) [JSON MODE] | ITERATION: 2
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "For the Pd-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides using Selectfluor, 2-pyridone-based ligands are highly effective. The native amide is a weak directing group, requiring a ligand that can stabilize the Pd intermediate and promote the challenging C-F reductive elimination. 6-Substituted 2-pyridones, particularly those bearing bulky amide groups at the 6-position (such as 6-CON(iPr)2 or 6-CON(sec-Bu)2), provide the optimal steric environment to accelerate the C-H cleavage and prevent catalyst deactivation. Therefore, 6-dialkylcarbamoyl-2-pyridones are scored highest, with bulkier derivatives outperforming less hindered ones. Simple 2-pyridones, MPAA ligands, and ligand-free conditions are generally ineffective.",
+  "scores": {
+    "Catalyst_f52040": 5.0,
+    "Catalyst_929a39": 10.0,
+    "Catalyst_2a3d60": 50.0,
+    "Catalyst_b1654c": 85.0,
+    "Catalyst_413842": 5.0,
+    "Catalyst_8a1819": 45.0,
+    "Catalyst_5909e1": 15.0,
+    "Catalyst_203b97": 80.0,
+    "Catalyst_bcdfbf": 20.0,
+    "Catalyst_395daf": 10.0,
+    "Catalyst_84a2cc": 75.0,
+    "Catalyst_9fb2b4": 30.0,
+    "Catalyst_1c1eeb": 90.0,
+    "Catalyst_398a04": 15.0,
+    "Catalyst_4cc26b": 5.0,
+    "Catalyst_c5fe00": 40.0,
+    "Catalyst_db28dd": 95.0,
+    "Catalyst_7855a1": 60.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 2 (CoT: Auto-Mechanism) [TEXT MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+The reaction proceeds via a Pd(II)/Pd(IV) catalytic cycle involving directed C-H activation followed by oxidation with Selectfluor and subsequent C-F reductive elimination. The use of 2-pyridone ligands is critical for accelerating the C-H cleavage step. Specifically, 6-substituted 2-pyridones bearing bulky amide groups, such as Catalyst_203b97, provide the necessary steric environment to facilitate the challenging C-F reductive elimination from the Pd(IV) intermediate while controlling site- and stereoselectivity. Less sterically encumbered or unfunctionalized 2-pyridones offer lower efficiency, and the absence of a ligand results in minimal conversion.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 40.0, Catalyst_b1654c | 50.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 30.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 95.0, Catalyst_bcdfbf | 20.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 30.0, Catalyst_1c1eeb | 85.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 20.0, Catalyst_db28dd | 80.0, Catalyst_7855a1 | 60.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 3 (CoT: Mechanism -> Properties) [TEXT MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+The reaction involves Pd-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides. This transformation requires a bidentate monoanionic ligand to facilitate C-H cleavage and stabilize the high-valent Pd intermediate during fluorination with Selectfluor. 2-Hydroxypyridine-6-carboxamides are highly effective for this, with bulky N,N-dialkyl substituents (like di-sec-butyl or diisopropyl) providing the optimal steric environment to promote reactivity and selectivity while preventing catalyst deactivation. Less bulky or structurally divergent 2-hydroxypyridines, as well as simple amino acid derivatives, lack the precise steric bulk required for high efficiency, resulting in significantly lower scores.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 15.0, Catalyst_b1654c | 40.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 25.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 50.0, Catalyst_bcdfbf | 20.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 10.0, Catalyst_1c1eeb | 85.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 15.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 60.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 4 (Supplied Mechanism -> Properties) [TEXT MODE] | ITERATION: 2
+--------------------------------------------------------------------------------
+- MECHANISM RULE: Bidentate 2-hydroxypyridine-6-carboxamide ligands are ideal. Bulky N,N-dialkyl groups (e.g., di-sec-butyl, diisopropyl) on the amide enhance stereo- and site-selectivity by enforcing a rigid palladacycle geometry during the rate-determining C-H cleavage and subsequent fluorination, preventing background reactions.
+- LIGAND CLASSIFICATION: 
+Good: Bulky 2-hydroxypyridine-6-carboxamides (Catalyst_db28dd, Catalyst_1c1eeb) provide optimal steric encumbrance for high selectivity and reactivity.
+Average: Less bulky or modified 2-hydroxypyridine derivatives (Catalyst_84a2cc, Catalyst_203b97, Catalyst_7855a1, Catalyst_b1654c, Catalyst_2a3d60, Catalyst_8a1819) offer moderate coordination but lack the precise sterics for high efficiency.
+Poor: Simple 2-hydroxypyridines, electron-deficient variants, non-coordinating additives, and no ligand (Catalyst_bcdfbf, Catalyst_9fb2b4, Catalyst_c5fe00, Catalyst_f52040, Catalyst_929a39, Catalyst_413842, Catalyst_5909e1, Catalyst_395daf, Catalyst_398a04, Catalyst_4cc26b) fail to stabilize the active Pd species or promote the desired pathway.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 35.0, Catalyst_b1654c | 40.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 30.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 55.0, Catalyst_bcdfbf | 15.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 65.0, Catalyst_9fb2b4 | 25.0, Catalyst_1c1eeb | 88.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 10.0, Catalyst_db28dd | 92.0, Catalyst_7855a1 | 45.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 1 (Zero-Shot) [TEXT MODE] | ITERATION: 4
+--------------------------------------------------------------------------------
+The palladium-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides relies on bidentate 2-pyridone ligands to accelerate C-H cleavage and control selectivity. 6-Hydroxypicolinamides are highly effective for this transformation, with bulky N,N-dialkyl substituents providing optimal steric environments to promote the desired reactivity and stereoselectivity. Consequently, N,N-di-sec-butyl-6-hydroxypicolinamide and its diisopropyl analog receive the highest scores. Less sterically demanding picolinamides and other 2-hydroxypyridine derivatives show moderate efficacy. Catalysts lacking the 2-pyridone motif or the essential bidentate coordination sites, as well as the ligand-free control, are largely ineffective and receive low scores.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 45.0, Catalyst_b1654c | 35.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 35.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 65.0, Catalyst_bcdfbf | 40.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 82.0, Catalyst_9fb2b4 | 50.0, Catalyst_1c1eeb | 88.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 10.0, Catalyst_c5fe00 | 30.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 75.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 2 (CoT: Auto-Mechanism) [TEXT MODE] | ITERATION: 4
+--------------------------------------------------------------------------------
+The reaction involves a palladium-catalyzed, ligand-accelerated beta-C(sp3)-H fluorination of weakly coordinating native amides using Selectfluor. This transformation proceeds via a Pd(II)/Pd(IV) catalytic cycle, where the key C-H cleavage step is facilitated by a bidentate mono-anionic ligand. 6-Hydroxypicolinamide derivatives, particularly those with bulky N,N-dialkyl groups, act as superior ligands by coordinating to palladium through the pyridone oxygen and the amide oxygen, promoting the challenging C-H activation and subsequent fluorination from a Pd(IV)-F intermediate. Consequently, bulky 6-hydroxypicolinamides like N,N-diisopropyl-6-hydroxypicolinamide receive the highest scores, while less sterically tuned or unfunctionalized pyridones, as well as the absence of a ligand, result in poor yields and are scored lower.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 10.0, Catalyst_2a3d60 | 30.0, Catalyst_b1654c | 40.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 35.0, Catalyst_5909e1 | 10.0, Catalyst_203b97 | 55.0, Catalyst_bcdfbf | 20.0, Catalyst_395daf | 10.0, Catalyst_84a2cc | 75.0, Catalyst_9fb2b4 | 25.0, Catalyst_1c1eeb | 95.0, Catalyst_398a04 | 10.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 15.0, Catalyst_db28dd | 85.0, Catalyst_7855a1 | 65.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 3 (CoT: Mechanism -> Properties) [TEXT MODE] | ITERATION: 4
+--------------------------------------------------------------------------------
+The palladium-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides requires a bidentate, monoanionic ligand to stabilize the high-valent Pd(IV) intermediate and direct the C-H activation step. 6-Hydroxypicolinamide derivatives are highly effective for this transformation, acting as L,X-type ligands that coordinate through the pyridine nitrogen and the deprotonated hydroxyl oxygen. The steric bulk of the amide substituent is crucial for enforcing the optimal geometry and preventing catalyst deactivation. Bulky dialkyl amides, such as N,N-di-sec-butyl and N,N-diisopropyl derivatives, provide the highest yields and selectivities, whereas less sterically hindered amides or simple 2-hydroxypyridines exhibit significantly lower catalytic efficiency.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 25.0, Catalyst_b1654c | 35.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 15.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 30.0, Catalyst_bcdfbf | 10.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 65.0, Catalyst_9fb2b4 | 15.0, Catalyst_1c1eeb | 82.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 10.0, Catalyst_db28dd | 88.0, Catalyst_7855a1 | 45.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 1 (Zero-Shot) [TEXT MODE] | ITERATION: 5
+--------------------------------------------------------------------------------
+The reaction involves palladium-catalyzed beta-C(sp3)-H fluorination of amides, which typically relies on bidentate monoanionic ligands such as 2-hydroxypyridine derivatives. Unsubstituted 2-hydroxypyridine and simple acids or amides offer poor to moderate reactivity. Introducing a carboxamide group at the 6-position of the 2-hydroxypyridine core significantly enhances the catalytic efficiency by providing a secondary coordination site and steric bulk that accelerates the reductive elimination of the C-F bond. Bulky N,N-dialkyl-6-hydroxypicolinamides, particularly those with branched alkyl groups like diisopropyl or di-sec-butyl, are highly effective, providing optimal steric environments for high yield and selectivity, whereas less bulky or non-coordinating ligands perform poorly.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 35.0, Catalyst_b1654c | 75.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 45.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 80.0, Catalyst_bcdfbf | 15.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 60.0, Catalyst_9fb2b4 | 25.0, Catalyst_1c1eeb | 85.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 2.0, Catalyst_c5fe00 | 10.0, Catalyst_db28dd | 92.0, Catalyst_7855a1 | 40.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 5 (Paper Context Zero-Shot) [JSON MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The reaction is a Pd-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides. This transformation requires a bidentate ligand that can stabilize the high-valent Pd(IV) intermediate and facilitate the challenging C-F reductive elimination, while also promoting the initial C-H activation. 6-Hydroxypicolinamide derivatives act as excellent L,X-type bidentate ligands. The steric bulk on the amide nitrogen is crucial for enforcing the optimal geometry and preventing catalyst deactivation. Thus, N,N-dialkyl-6-hydroxypicolinamides show superior performance, with bulky groups like di-sec-butyl (Catalyst_db28dd) and diisopropyl (Catalyst_1c1eeb) providing the highest yields. Less bulky amides (diethyl, dimethyl) and the free acid give progressively lower yields. Monodentate 2-pyridones, simple amino acids, and ligand-free conditions are generally ineffective.",
+  "scores": {
+    "Catalyst_f52040": 0.5,
+    "Catalyst_929a39": 1.5,
+    "Catalyst_2a3d60": 12.5,
+    "Catalyst_b1654c": 7.5,
+    "Catalyst_413842": 1.0,
+    "Catalyst_8a1819": 9.0,
+    "Catalyst_5909e1": 2.5,
+    "Catalyst_203b97": 28.5,
+    "Catalyst_bcdfbf": 4.5,
+    "Catalyst_395daf": 1.5,
+    "Catalyst_84a2cc": 64.5,
+    "Catalyst_9fb2b4": 18.0,
+    "Catalyst_1c1eeb": 81.2,
+    "Catalyst_398a04": 2.0,
+    "Catalyst_4cc26b": 0.0,
+    "Catalyst_c5fe00": 3.5,
+    "Catalyst_db28dd": 88.5,
+    "Catalyst_7855a1": 42.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 3 (CoT: Mechanism -> Properties) [TEXT MODE] | ITERATION: 5
+--------------------------------------------------------------------------------
+The reaction involves a palladium-catalyzed, ligand-accelerated beta-C(sp3)-H fluorination of weakly coordinating native amides using Selectfluor. This transformation requires a bidentate ligand capable of stabilizing the reactive palladium intermediates while promoting the challenging C-H cleavage and subsequent C-F bond formation. 2-Hydroxypyridine (or 2-pyridone) derivatives bearing bulky substituents at the 6-position are highly effective for this purpose. The hydroxyl group coordinates to palladium, while the bulky 6-substituent (such as a tertiary carbon linked to an amide, as seen in Catalyst_203b97) provides crucial steric bulk that accelerates the reductive elimination or prevents catalyst deactivation, leading to optimal yields and selectivities.
+
+[SCORES]
+Catalyst_f52040 | 10.0, Catalyst_929a39 | 15.0, Catalyst_2a3d60 | 35.0, Catalyst_b1654c | 75.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 45.0, Catalyst_5909e1 | 10.0, Catalyst_203b97 | 95.0, Catalyst_bcdfbf | 25.0, Catalyst_395daf | 10.0, Catalyst_84a2cc | 65.0, Catalyst_9fb2b4 | 30.0, Catalyst_1c1eeb | 85.0, Catalyst_398a04 | 10.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 20.0, Catalyst_db28dd | 80.0, Catalyst_7855a1 | 55.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 4 (Supplied Mechanism -> Properties) [TEXT MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+- MECHANISM RULE: The reaction requires a bidentate ligand to stabilize the cationic Pd(II) center and facilitate the rate-determining CMD step. Bulky, chiral 2-pyridyl-2-hydroxypyridine ligands provide the necessary steric environment for high stereo- and site-selectivity during the C-H activation and subsequent fluorination.
+- LIGAND CLASSIFICATION: 
+Good: Chiral 2-pyridyl-2-hydroxypyridine derivatives (Catalyst_b1654c) and bulky 2-hydroxypyridine-6-carboxamides (Catalyst_203b97, Catalyst_1c1eeb, Catalyst_db28dd, Catalyst_84a2cc) which provide strong bidentate coordination and the optimal steric bulk for high selectivity and reactivity.
+Average: Less sterically hindered or simpler 2-hydroxypyridine derivatives (Catalyst_7855a1, Catalyst_8a1819, Catalyst_2a3d60, Catalyst_9fb2b4, Catalyst_bcdfbf, Catalyst_c5fe00) that offer basic coordination to the palladium center but lack the optimal steric framework for high stereocontrol.
+Poor: Simple amides, amino acid derivatives, and no ligand (Catalyst_f52040, Catalyst_929a39, Catalyst_413842, Catalyst_5909e1, Catalyst_395daf, Catalyst_398a04, Catalyst_4cc26b) which fail to properly chelate and stabilize the active Pd species, leading to poor catalytic turnover.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 10.0, Catalyst_2a3d60 | 40.0, Catalyst_b1654c | 95.0, Catalyst_413842 | 10.0, Catalyst_8a1819 | 45.0, Catalyst_5909e1 | 10.0, Catalyst_203b97 | 80.0, Catalyst_bcdfbf | 30.0, Catalyst_395daf | 10.0, Catalyst_84a2cc | 60.0, Catalyst_9fb2b4 | 35.0, Catalyst_1c1eeb | 70.0, Catalyst_398a04 | 10.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 25.0, Catalyst_db28dd | 65.0, Catalyst_7855a1 | 50.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 2 (CoT: Auto-Mechanism) [TEXT MODE] | ITERATION: 5
+--------------------------------------------------------------------------------
+The reaction proceeds via a palladium(II/IV) catalytic cycle involving directed C(sp3)-H activation of the native amide, followed by oxidation with Selectfluor and subsequent C-F reductive elimination. Weakly coordinating native amides require specialized bidentate monoanionic ligands to accelerate the C-H cleavage and stabilize the high-valent Pd intermediates. 2-Pyridone ligands bearing bulky amide side chains at the 6-position, such as Catalyst_203b97, are highly effective in promoting this transformation by providing optimal steric bulk and electronic properties, preventing catalyst deactivation and enhancing both site- and stereoselectivity. Simpler or less sterically tuned pyridones, as well as background reactions without ligands, yield significantly lower efficiencies.
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 35.0, Catalyst_b1654c | 45.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 25.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 95.0, Catalyst_bcdfbf | 10.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 65.0, Catalyst_9fb2b4 | 20.0, Catalyst_1c1eeb | 75.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 15.0, Catalyst_db28dd | 85.0, Catalyst_7855a1 | 55.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 6 (Paper Context -> Mechanism -> Properties) [JSON MODE] | ITERATION: 1
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "Based on the provided text, the reaction is a Pd-catalyzed methylene beta-C(sp3)-H fluorination of native amides. The optimal ligand is a bidentate neutral amide-pyridone (NAP) ligand that stabilizes the cationic Pd(II) center. Yields are extracted from the text and Table 1 descriptions: no ligand gives 24%; L1-L4 (internal base -NHAc) give low yields (~20-27%); L5 (MPANA) doubles the yield to 48%; L6 (NAP, diethyl) gives 61%; L7 (six-membered chelate) gives 46%; L8-L9 give moderate yields (~38-40%); L10 and L11 give low yields (~26-28%); L12 (dimethyl) and L13 (di-isopropyl) give 58% and 65% respectively; L14 (di-isobutyl/sec-butyl) is optimal at 74%; L15 (ketone-pyridone) gives 64%; L16 (acid-pyridone) gives 35%; and an electron-deficient monodentate pyridone gives a moderate yield (~30%).",
+  "scores": {
+    "Catalyst_f52040": 26.0,
+    "Catalyst_929a39": 20.0,
+    "Catalyst_2a3d60": 64.0,
+    "Catalyst_b1654c": 40.0,
+    "Catalyst_413842": 48.0,
+    "Catalyst_8a1819": 38.0,
+    "Catalyst_5909e1": 27.0,
+    "Catalyst_203b97": 46.0,
+    "Catalyst_bcdfbf": 28.0,
+    "Catalyst_395daf": 25.0,
+    "Catalyst_84a2cc": 61.0,
+    "Catalyst_9fb2b4": 35.0,
+    "Catalyst_1c1eeb": 65.0,
+    "Catalyst_398a04": 25.0,
+    "Catalyst_4cc26b": 24.0,
+    "Catalyst_c5fe00": 30.0,
+    "Catalyst_db28dd": 74.0,
+    "Catalyst_7855a1": 58.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 5 (Paper Context Zero-Shot) [JSON MODE] | ITERATION: 4
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The reaction involves the Pd-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides using Selectfluor. This transformation requires a ligand that can stabilize the high-valent Pd(IV) intermediate and facilitate the challenging C-F reductive elimination. 2-Pyridone-6-carboxamides are highly effective bidentate ligands for this purpose. The steric bulk of the N,N-dialkyl groups on the carboxamide moiety plays a crucial role in enforcing the optimal geometry for C-H activation and preventing catalyst deactivation via bis-coordination. Therefore, bulky derivatives such as N,N-di-sec-butyl-6-hydroxypicolinamide (Catalyst_db28dd) and N,N-diisopropyl-6-hydroxypicolinamide (Catalyst_1c1eeb) are expected to provide the highest yields. Less sterically hindered amides (diethyl, dimethyl) will show moderate reactivity, while simple 2-pyridones, MPAA ligands, and ligand-free conditions will be largely ineffective.",
+  "scores": {
+    "Catalyst_f52040": 5.0,
+    "Catalyst_929a39": 10.0,
+    "Catalyst_2a3d60": 15.0,
+    "Catalyst_b1654c": 15.0,
+    "Catalyst_413842": 10.0,
+    "Catalyst_8a1819": 15.0,
+    "Catalyst_5909e1": 10.0,
+    "Catalyst_203b97": 40.0,
+    "Catalyst_bcdfbf": 15.0,
+    "Catalyst_395daf": 10.0,
+    "Catalyst_84a2cc": 65.0,
+    "Catalyst_9fb2b4": 20.0,
+    "Catalyst_1c1eeb": 85.0,
+    "Catalyst_398a04": 10.0,
+    "Catalyst_4cc26b": 5.0,
+    "Catalyst_c5fe00": 25.0,
+    "Catalyst_db28dd": 88.0,
+    "Catalyst_7855a1": 50.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 4 (Supplied Mechanism -> Properties) [TEXT MODE] | ITERATION: 4
+--------------------------------------------------------------------------------
+- MECHANISM RULE: Bidentate 2-pyridone ligands with a 6-position amide group coordinate to Pd(II), facilitating CMD and stabilizing the Pd(IV) intermediate. Bulky N-alkyl groups on the 6-amide (e.g., di-sec-butyl, diisopropyl) provide optimal steric bulk to promote C-F reductive elimination and prevent catalyst deactivation, ensuring high stereo- and site-selectivity.
+- LIGAND CLASSIFICATION: 
+Good: 6-amide-2-pyridones with bulky N-alkyl groups (di-sec-butyl, diisopropyl, diethyl) which provide optimal sterics for the catalytic cycle (e.g., Catalyst_db28dd, Catalyst_1c1eeb, Catalyst_84a2cc).
+Average: 6-amide-2-pyridones with smaller groups (dimethyl), 6-substituted 2-pyridones with different linkers or groups (acetyl, carboxy), and other bidentate pyridones (e.g., Catalyst_7855a1, Catalyst_203b97, Catalyst_b1654c, Catalyst_8a1819, Catalyst_2a3d60).
+Poor: Simple 2-pyridones, electron-deficient 2-pyridones, non-coordinating additives, and no ligand controls (e.g., Catalyst_9fb2b4, Catalyst_c5fe00, Catalyst_bcdfbf, Catalyst_4cc26b, Catalyst_f52040, Catalyst_929a39, Catalyst_413842, Catalyst_5909e1, Catalyst_395daf, Catalyst_398a04).
+
+[SCORES]
+Catalyst_f52040 | 5.0, Catalyst_929a39 | 5.0, Catalyst_2a3d60 | 25.0, Catalyst_b1654c | 35.0, Catalyst_413842 | 5.0, Catalyst_8a1819 | 30.0, Catalyst_5909e1 | 5.0, Catalyst_203b97 | 40.0, Catalyst_bcdfbf | 10.0, Catalyst_395daf | 5.0, Catalyst_84a2cc | 72.0, Catalyst_9fb2b4 | 20.0, Catalyst_1c1eeb | 88.0, Catalyst_398a04 | 5.0, Catalyst_4cc26b | 5.0, Catalyst_c5fe00 | 15.0, Catalyst_db28dd | 94.0, Catalyst_7855a1 | 55.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 5 (Paper Context Zero-Shot) [JSON MODE] | ITERATION: 5
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "For the Pd-catalyzed beta-C(sp3)-H fluorination of weakly coordinating native amides using Selectfluor, 2-pyridone ligands bearing a carboxamide group at the 6-position are highly effective. The carboxamide moiety provides secondary coordination and steric bulk that stabilizes the active Pd species, facilitating the challenging Pd(II)/Pd(IV) oxidation and subsequent C-F reductive elimination. Bulky dialkylamides (e.g., diisopropyl or di-sec-butyl) at the 6-position typically offer the best performance by preventing catalyst deactivation and promoting the desired geometry for Selectfluor oxidative addition. Simple 2-pyridones, mono-protected amino acids (MPAAs), or unfunctionalized amides are generally ineffective for this specific transformation.",
+  "scores": {
+    "Catalyst_f52040": 5.0,
+    "Catalyst_929a39": 10.0,
+    "Catalyst_2a3d60": 40.0,
+    "Catalyst_b1654c": 35.0,
+    "Catalyst_413842": 10.0,
+    "Catalyst_8a1819": 30.0,
+    "Catalyst_5909e1": 15.0,
+    "Catalyst_203b97": 55.0,
+    "Catalyst_bcdfbf": 20.0,
+    "Catalyst_395daf": 10.0,
+    "Catalyst_84a2cc": 75.0,
+    "Catalyst_9fb2b4": 45.0,
+    "Catalyst_1c1eeb": 88.0,
+    "Catalyst_398a04": 15.0,
+    "Catalyst_4cc26b": 1.0,
+    "Catalyst_c5fe00": 25.0,
+    "Catalyst_db28dd": 92.0,
+    "Catalyst_7855a1": 65.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 6 (Paper Context -> Mechanism -> Properties) [JSON MODE] | ITERATION: 2
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The reaction is a Pd-catalyzed methylene beta-C(sp3)-H fluorination of native amides. The yields for the evaluated ligands are extracted from the text discussing Table 1. Yields not explicitly mentioned in the text (due to the table contents not being fully transcribed) are assigned a score of 0.0. The 'no ligand' control yielded 24%. L5 doubled the yield (48%). L6 yielded 61%, L7 yielded 46%, L14 yielded 74%, L15 yielded 64%, and L16 yielded 35%.",
+  "scores": {
+    "Catalyst_f52040": 0.0,
+    "Catalyst_929a39": 0.0,
+    "Catalyst_2a3d60": 64.0,
+    "Catalyst_b1654c": 0.0,
+    "Catalyst_413842": 48.0,
+    "Catalyst_8a1819": 0.0,
+    "Catalyst_5909e1": 0.0,
+    "Catalyst_203b97": 46.0,
+    "Catalyst_bcdfbf": 0.0,
+    "Catalyst_395daf": 0.0,
+    "Catalyst_84a2cc": 61.0,
+    "Catalyst_9fb2b4": 35.0,
+    "Catalyst_1c1eeb": 0.0,
+    "Catalyst_398a04": 0.0,
+    "Catalyst_4cc26b": 24.0,
+    "Catalyst_c5fe00": 0.0,
+    "Catalyst_db28dd": 74.0,
+    "Catalyst_7855a1": 0.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 4 (Supplied Mechanism -> Properties) [TEXT MODE] | ITERATION: 5
+--------------------------------------------------------------------------------
+- MECHANISM RULE: Bidentate L,X-coordination via the pyridone nitrogen and amide oxygen accelerates CMD and stabilizes the Pd center. Bulky N,N-dialkyl groups on the picolinamide (e.g., di-sec-butyl, diisopropyl) prevent inactive bis-ligated Pd complexes and lower the activation barrier for the challenging C-F reductive elimination from the Pd(IV) intermediate.
+- LIGAND CLASSIFICATION: 
+Good: Bulky N,N-dialkyl-6-hydroxypicolinamides (Catalyst_db28dd, Catalyst_1c1eeb, Catalyst_84a2cc) which provide optimal steric hindrance to favor mono-ligation and accelerate reductive elimination.
+Average: Less bulky picolinamides (Catalyst_7855a1) and structurally related bidentate ligands (Catalyst_203b97, Catalyst_9fb2b4, Catalyst_2a3d60, Catalyst_b1654c, Catalyst_8a1819) that offer suboptimal sterics or electronics for this specific transformation.
+Poor: Monodentate ligands, simple pyridones, amino acid derivatives, and no ligand controls (Catalyst_bcdfbf, Catalyst_c5fe00, Catalyst_4cc26b, Catalyst_f52040, Catalyst_929a39, Catalyst_5909e1, Catalyst_398a04, Catalyst_395daf, Catalyst_413842) which fail to form the active catalytic species or lack the necessary directing groups.
+
+[SCORES]
+Catalyst_f52040 | 1.0, Catalyst_929a39 | 1.0, Catalyst_2a3d60 | 15.0, Catalyst_b1654c | 10.0, Catalyst_413842 | 1.0, Catalyst_8a1819 | 10.0, Catalyst_5909e1 | 1.0, Catalyst_203b97 | 30.0, Catalyst_bcdfbf | 5.0, Catalyst_395daf | 1.0, Catalyst_84a2cc | 65.0, Catalyst_9fb2b4 | 20.0, Catalyst_1c1eeb | 88.0, Catalyst_398a04 | 1.0, Catalyst_4cc26b | 1.0, Catalyst_c5fe00 | 2.0, Catalyst_db28dd | 95.0, Catalyst_7855a1 | 45.0, [END_OF_SCORING]
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 6 (Paper Context -> Mechanism -> Properties) [JSON MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The paper describes a Pd-catalyzed methylene beta-C(sp3)-H fluorination of native amides using neutral amide-pyridone (NAP) ligands. Yields are extracted from the text where explicitly mentioned (e.g., no ligand: 24%, L5: 48%, L6: 70% with optimized Pd source, L7: 46%, L14: 74%, L15: 64%, L16: 35%). For ligands whose exact yields are only in the SI or not explicitly stated in the provided text (L1-L4, L8-L13, and the electron-deficient pyridone), a yield of 0.0 is assigned.",
+  "scores": {
+    "Catalyst_f52040": 0.0,
+    "Catalyst_929a39": 0.0,
+    "Catalyst_2a3d60": 64.0,
+    "Catalyst_b1654c": 0.0,
+    "Catalyst_413842": 48.0,
+    "Catalyst_8a1819": 0.0,
+    "Catalyst_5909e1": 0.0,
+    "Catalyst_203b97": 46.0,
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 6 (Paper Context -> Mechanism -> Properties) [JSON MODE] | ITERATION: 3
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The reaction is a Pd-catalyzed methylene beta-C(sp3)-H fluorination of native amides. Yields are extracted from the text describing Table 1. 'no ligand' gave 24%. L5 (MPANA) doubled the yield to 48%. L6 (diethyl NAP) gave 61%. L7 (six-membered chelate) gave 46%. L14 (di-sec/isobutyl NAP) gave 74%. L15 (ketone-pyridone) gave 64%. L16 (acid-pyridone) gave 35%. Other ligands (L1-L4, L8-L13, and monodentate pyridones) did not have specific yields reported or were described as giving moderate/lower yields, so they are assigned 0.0.",
+  "scores": {
+    "Catalyst_f52040": 0.0,
+    "Catalyst_929a39": 0.0,
+    "Catalyst_2a3d60": 64.0,
+    "Catalyst_b1654c": 0.0,
+    "Catalyst_413842": 48.0,
+    "Catalyst_8a1819": 0.0,
+    "Catalyst_5909e1": 0.0,
+    "Catalyst_203b97": 46.0,
+    "Catalyst_bcdfbf": 0.0,
+    "Catalyst_395daf": 0.0,
+    "Catalyst_84a2cc": 61.0,
+    "Catalyst_9fb2b4": 35.0,
+    "Catalyst_1c1eeb": 0.0,
+    "Catalyst_398a04": 0.0,
+    "Catalyst_4cc26b": 24.0,
+    "Catalyst_c5fe00": 0.0,
+    "Catalyst_db28dd": 74.0,
+    "Catalyst_7855a1": 0.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 6 (Paper Context -> Mechanism -> Properties) [JSON MODE] | ITERATION: 4
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The reaction is a Pd-catalyzed methylene beta-C-H fluorination of native amides. Yields are extracted from Table 1. The optimal ligand L14 (di-sec-butyl/di-isobutyl neutral amide-pyridone) gave 74% yield. The electron-deficient monodentate pyridone yield is estimated as 40% based on the text describing it as 'moderate'.",
+  "scores": {
+    "Catalyst_f52040": 24.0,
+    "Catalyst_929a39": 27.0,
+    "Catalyst_2a3d60": 64.0,
+    "Catalyst_b1654c": 44.0,
+    "Catalyst_413842": 48.0,
+    "Catalyst_8a1819": 38.0,
+    "Catalyst_5909e1": 25.0,
+    "Catalyst_203b97": 46.0,
+    "Catalyst_bcdfbf": 25.0,
+    "Catalyst_395daf": 25.0,
+    "Catalyst_84a2cc": 61.0,
+    "Catalyst_9fb2b4": 35.0,
+    "Catalyst_1c1eeb": 68.0,
+    "Catalyst_398a04": 26.0,
+    "Catalyst_4cc26b": 24.0,
+    "Catalyst_c5fe00": 40.0,
+    "Catalyst_db28dd": 74.0,
+    "Catalyst_7855a1": 65.0
+  }
+}
+```
+================================================================================
+
+================================================================================
+MODEL: google/gemini-3.1-pro-preview | TASK: Pd_CH_Fluorination | LEVEL: Level 6 (Paper Context -> Mechanism -> Properties) [JSON MODE] | ITERATION: 5
+--------------------------------------------------------------------------------
+```json
+{
+  "reasoning": "The reaction is a Pd-catalyzed methylene beta-C(sp3)-H fluorination of native amides. Yields are extracted from the text where explicitly mentioned (e.g., no ligand: 24%, L5: 48%, L6: 61%, L7: 46%, L14: 74%, L15: 64%, L16: 35%). For ligands without exact yields in the text (L1-L4, L8-L13, and the electron-deficient pyridone), estimated values based on qualitative descriptions ('did not significantly improve', 'moderate yields') are provided.",
+  "scores": {
+    "Catalyst_f52040": 25.0,
+    "Catalyst_929a39": 25.0,
+    "Catalyst_2a3d60": 64.0,
+    "Catalyst_b1654c": 40.0,
+    "Catalyst_413842": 48.0,
+    "Catalyst_8a1819": 40.0,
+    "Catalyst_5909e1": 25.0,
+    "Catalyst_203b97": 46.0,
+    "Catalyst_bcdfbf": 25.0,
+    "Catalyst_395daf": 25.0,
+    "Catalyst_84a2cc": 61.0,
+    "Catalyst_9fb2b4": 35.0,
+    "Catalyst_1c1eeb": 68.0,
+    "Catalyst_398a04": 25.0,
+    "Catalyst_4cc26b": 24.0,
+    "Catalyst_c5fe00": 40.0,
+    "Catalyst_db28dd": 74.0,
+    "Catalyst_7855a1": 65.0
+  }
+}
+```
+================================================================================
