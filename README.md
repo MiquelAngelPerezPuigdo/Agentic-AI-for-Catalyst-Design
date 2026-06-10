@@ -29,8 +29,8 @@ This suite is divided into three distinct benchmarking modules:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/MiquelAngelPerezPuigdo/Agentic-AI-for-organocatalyst-design.git](https://github.com/MiquelAngelPerezPuigdo/Agentic-AI-for-organocatalyst-design.git)
-   cd Agentic-AI-for-organocatalyst-design
+   git clone https://github.com/MiquelAngelPerezPuigdo/Agentic-AI-for-Catalyst-Design.git
+   cd Agentic-AI-for-Catalyst-Design
    ```
 
 2. **Create the environment:**
@@ -75,7 +75,7 @@ python main.py --mode prospective
 ## 📂 Project Structure
 
 ```text
-Agentic-AI-for-organocatalyst-design/
+Agentic-AI-for-Catalyst-Design/
 ├── main.py              # Master switchboard / Entry point
 ├── config.py            # API keys and model configurations
 ├── env.yml              # Conda environment dependencies
