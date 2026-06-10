@@ -113,7 +113,7 @@ def plot_level_hierarchy(csv_path="output/benchmark2_results.csv"):
         
     print(f"[+] Benchmark 2 plots successfully saved to the output/ directory.")
 
-    def plot_prospective_convergence(results_dict, output_path="output/generative_benchmark.png"):
+def plot_prospective_convergence(results_dict, output_path="output/generative_benchmark.png"):
     plt.figure(figsize=(11, 7))
     steps = np.arange(1, 15) # 14 Iterations
     

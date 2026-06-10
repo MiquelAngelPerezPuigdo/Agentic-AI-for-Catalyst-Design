@@ -40,15 +40,39 @@ def process_single_task(model, rxn_key, rxn_data, use_context, iteration):
         "Judge_Justification": just   
     }
 
+def generate_single_ground_truth(rxn_name, rxn_text, max_retries=3):
+    """Generates the ground truth assessment for a single reaction with retries."""
+    truth_prompt = PROMPT_TEMPLATE.format(
+        reaction_name=rxn_name,
+        context_block=f"Full Paper Text:\n{rxn_text[:50000]}"
+    )
+    for attempt in range(max_retries):
+        try:
+            truth = call_openrouter(JUDGE_MODEL, truth_prompt, temperature=0)
+            if truth and truth not in ["API_ERROR", "API_RETURNED_NULL"] and not truth.startswith("ERROR"):
+                return truth
+            print(f"[!] Warning: Ground truth generation failed on attempt {attempt+1}/{max_retries} for {rxn_name}. Retrying...")
+        except Exception as e:
+            print(f"[!] Warning: Exception during ground truth generation on attempt {attempt+1}/{max_retries} for {rxn_name}: {e}")
+    raise RuntimeError(f"Failed to generate valid ground truth for {rxn_name} after {max_retries} attempts.")
+
 def run_fair_experiment(reactions_dict, max_workers=5):
     """Orchestrates the parallel execution of the benchmark."""
-    print("\nPhase 1: Generating Ground Truths...")
-    for key, rxn in reactions_dict.items():
-        truth_prompt = PROMPT_TEMPLATE.format(
-            reaction_name=rxn["name"],
-            context_block=f"Full Paper Text:\n{rxn['text'][:50000]}"
-        )
-        rxn["ground_truth"] = call_openrouter(JUDGE_MODEL, truth_prompt, temperature=0)
+    print("\nPhase 1: Generating Ground Truths in Parallel...")
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(reactions_dict), max_workers)) as executor:
+        future_to_rxn = {
+            executor.submit(generate_single_ground_truth, rxn["name"], rxn.get("text", "")): key
+            for key, rxn in reactions_dict.items()
+        }
+        for future in concurrent.futures.as_completed(future_to_rxn):
+            key = future_to_rxn[future]
+            try:
+                reactions_dict[key]["ground_truth"] = future.result()
+                print(f"[+] Successfully generated ground truth for: {reactions_dict[key]['name'][:60]}...")
+            except Exception as exc:
+                print(f"\n[!] Critical failure in ground truth generation for {key}: {exc}")
+                raise exc
 
     results = []
     print(f"\nPhase 2: Benchmarking all models (Parallelized with {max_workers} workers)...")
@@ -126,41 +150,74 @@ def process_ligand_task(model, task_key, level_name, iteration, task_data):
     }
 
 def run_ligand_experiment(max_workers=5, required_iterations=5, max_attempts=20):
-    """Orchestrates the parallel execution of the Ligand Benchmark."""
-    tasks = []
-    # Loop through models, tasks, and levels to queue up work
-    for model in ALL_MODELS:
-        for task_key, task_data in RANKING_TASKS.items():
-            for level_name in ALL_LEVEL_KEYS:
-                # We queue up extra attempts in case some API calls fail or return bad JSON
-                for i in range(max_attempts): 
-                    tasks.append((model, task_key, level_name, i, task_data))
-                
+    """Orchestrates the parallel execution of the Ligand Benchmark with dynamic retry queueing."""
     results = []
-    # Tracker to ensure we stop once we get the required number of successful iterations
-    success_tracker = {f"{m}_{t}_{l}": 0 for m in ALL_MODELS for t in RANKING_TASKS for l in ALL_LEVEL_KEYS}
+    
+    # Initialize trackers for each combination
+    trackers = {}
+    for model in ALL_MODELS:
+        for task_key in RANKING_TASKS:
+            for level_name in ALL_LEVEL_KEYS:
+                trackers[(model, task_key, level_name)] = {
+                    "successes_got": 0,
+                    "attempts_submitted": 0,
+                    "pending_attempts": 0
+                }
 
     print(f"\nPhase 2: Benchmarking Ligand Ranking (Parallelized with {max_workers} workers)...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_task = {executor.submit(process_ligand_task, *args): args for args in tasks}
+        future_to_info = {}
         
-        for future in tqdm(concurrent.futures.as_completed(future_to_task), total=len(tasks)):
-            args = future_to_task[future]
-            model, task_key, level_name = args[0], args[1], args[2]
-            tracker_key = f"{model}_{task_key}_{level_name}"
-            
-            # Stop tracking this combination if we already have the required iterations
-            if success_tracker[tracker_key] >= required_iterations:
-                continue
+        # 1. Submit initial tasks (exactly required_iterations per combination)
+        for (model, task_key, level_name), tracker in trackers.items():
+            task_data = RANKING_TASKS[task_key]
+            for i in range(required_iterations):
+                future = executor.submit(process_ligand_task, model, task_key, level_name, i, task_data)
+                future_to_info[future] = (model, task_key, level_name, i, task_data)
+                tracker["attempts_submitted"] += 1
+                tracker["pending_attempts"] += 1
 
-            try:
-                res = future.result()
-                if res: # If it successfully parsed and evaluated
-                    res["Iteration"] = success_tracker[tracker_key] 
+        # Use a progress bar for the total expected successes
+        total_required_successes = len(trackers) * required_iterations
+        pbar = tqdm(total=total_required_successes, desc="Ligand Successes")
+        
+        while future_to_info:
+            # Wait for any future to complete
+            done, _ = concurrent.futures.wait(future_to_info.keys(), return_when=concurrent.futures.FIRST_COMPLETED)
+            
+            for future in done:
+                if future not in future_to_info:
+                    continue
+                model, task_key, level_name, attempt_idx, task_data = future_to_info.pop(future)
+                tracker_key = (model, task_key, level_name)
+                tracker = trackers[tracker_key]
+                tracker["pending_attempts"] -= 1
+                
+                try:
+                    res = future.result()
+                except Exception as e:
+                    print(f"\n[!] Exception during process_ligand_task for {model.split('/')[-1]} on {task_key}/{level_name}: {e}")
+                    res = None
+                
+                if res:
+                    # Successful run!
+                    res["Iteration"] = tracker["successes_got"]
                     results.append(res)
-                    success_tracker[tracker_key] += 1
-            except Exception:
-                pass
+                    tracker["successes_got"] += 1
+                    pbar.update(1)
+                
+                # Dynamic adjustment check:
+                # If we still need more successes, and the current pending queue isn't enough to reach required_iterations,
+                # and we haven't hit the max_attempts cap, submit a new retry task on-demand.
+                needed = required_iterations - tracker["successes_got"]
+                if needed > tracker["pending_attempts"] and tracker["attempts_submitted"] < max_attempts:
+                    next_attempt_idx = tracker["attempts_submitted"]
+                    new_future = executor.submit(process_ligand_task, model, task_key, level_name, next_attempt_idx, task_data)
+                    future_to_info[new_future] = (model, task_key, level_name, next_attempt_idx, task_data)
+                    tracker["attempts_submitted"] += 1
+                    tracker["pending_attempts"] += 1
+
+        pbar.close()
 
     return pd.DataFrame(results)
 
@@ -240,7 +297,16 @@ def run_prospective_campaign(campaign_id, model_name):
                 break # Success! Break out of retry loop.
             except Exception:
                 if attempt == max_gen_attempts - 1:
-                    smiles_list = ["C1=CC=C(C=C1)CN2C=C(C3=NC(=CC=C3)O)N=N2", "Oc1nc(C2=CN(CC3=CC=C(C=C3)C(F)(F)F)N=N2)c(C)cc1", "COC1=C(N=C(C=C1)C2=CN(CC3=CC=CC=C3)N=N2)O"]
+                    import random
+                    existing_canonicals = set([r["smiles"] for r in history_records])
+                    untried_candidates = [smiles for smiles in dataset_dict if smiles not in existing_canonicals]
+                    if len(untried_candidates) >= 3:
+                        smiles_list = random.sample(untried_candidates, 3)
+                    else:
+                        hardcoded_defaults = ["C1=CC=C(C=C1)CN2C=C(C3=NC(=CC=C3)O)N=N2", "Oc1nc(C2=CN(CC3=CC=C(C=C3)C(F)(F)F)N=N2)c(C)cc1", "COC1=C(N=C(C=C1)C2=CN(CC3=CC=CC=C3)N=N2)O"]
+                        smiles_list = [s for s in hardcoded_defaults if s not in existing_canonicals]
+                        while len(smiles_list) < 3:
+                            smiles_list.append(f"CCCC{len(smiles_list)}C")
 
         # Evaluate and log
         step_yields = []

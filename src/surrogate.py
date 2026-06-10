@@ -37,22 +37,26 @@ class HybridSurrogateModel:
         final_blend = (0.6 * rf_pred) + (0.4 * ridge_pred)
         return min(max(final_blend, 0.0), 98.0)
 
+import threading
+
 # Singleton variables to prevent retraining the model for every parallel thread
+_SURROGATE_LOCK = threading.Lock()
 _SURROGATE_INSTANCE = None
 _FP_GENERATOR = None
 _DATASET_DICT = None
 
 def init_surrogate():
     global _SURROGATE_INSTANCE, _FP_GENERATOR, _DATASET_DICT
-    if _SURROGATE_INSTANCE is not None:
-        return _SURROGATE_INSTANCE, _FP_GENERATOR, _DATASET_DICT
+    with _SURROGATE_LOCK:
+        if _SURROGATE_INSTANCE is not None:
+            return _SURROGATE_INSTANCE, _FP_GENERATOR, _DATASET_DICT
 
-    if not HAS_ML_LIBS:
-        raise ImportError("RDKit or scikit-learn missing. Check env.yml.")
+        if not HAS_ML_LIBS:
+            raise ImportError("RDKit or scikit-learn missing. Check env.yml.")
 
-    _FP_GENERATOR = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
-    _DATASET_DICT = {}
-    X_train_fps, y_train_yields = [], []
+        _FP_GENERATOR = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
+        _DATASET_DICT = {}
+        X_train_fps, y_train_yields = [], []
 
     print("-> Training Ensemble Descriptor-Hybridized Extrapolative Surrogate Regressor...")
     for line in MASTER_DATASET_RAW.strip().split("\n"):
