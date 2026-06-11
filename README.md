@@ -75,17 +75,18 @@ The prospective active learning module includes a rigorous ablation suite to iso
 
 You can select an ablation mode using the `--ablation` argument:
 
+All ablations share the same optimized Canonical-SMILES baseline so that each removed feature is isolated fairly (no SMILES-representation noise confounding the chemical comparisons).
+
 | Mode | Name | Scientific Purpose |
 | :---: | :--- | :--- |
-| **`A`** | **Baseline (Full Pipeline)** | Evaluates the model with full structural sorting, SMILES randomizations, portfolio directives, and Pd-catalysis mechanism guidelines. |
-| **`B`** | **`-SAR Ladder`** | Shuffles the historical screening database randomly, destroying the structure-activity relationships (SAR) sorting order. |
-| **`C`** | **`-Portfolio Directive`** | Strips out the balanced active exploration/exploitation directives, defaulting to standard systematic local optimization prompts. |
-| **`D`** | **`-SMILES Shuffle`** | Disables random SMILES enumeration, forcing the model to only see static canonical SMILES representations. |
-| **`E`** | **`-Mechanism`** | Retains general reaction context but strips out the specific hypothesized Pd(II)/Pd(0) mechanism pathway guidelines. |
-| **`F`** | **`-Chemical Blackout`** | Strips all reaction descriptions and mechanistic guides; the LLM optimizes purely based on SMILES string patterns (but retains active portfolio explorer/exploit directives). |
-| **`G`** | **`-Chem Blackout & -Portfolio (C+F)`** | **Compound Ablation:** Complete chemical blackout combined with the removal of portfolio search policy directives. Tests if chemistry-free search can survive without strategy guidelines. |
-| **`H`** | **`Full Ablation`** | Combines B, C, D, and F. Strips all structural sorting, SMILES randomizations, exploration strategies, and chemical information (purely blind tabular optimization). |
-| **`all`** | **`All Modes`** | Sequentially runs all modes (A through H) and generates a high-quality comparison chart of their convergence performance. |
+| **`A`** | **Baseline (Canonical + Full Pipeline)** | Canonical SMILES + SAR ladder sorting + portfolio explore/exploit directives + full Pd-catalysis chemistry & mechanism. The strongest reference configuration. |
+| **`B`** | **`-SAR Ladder & Raw SMILES`** | Removes the SAR ladder (history kept in chronological insertion order) and feeds SMILES exactly as written by the LLM / as they came from the database (no canonicalization). |
+| **`C`** | **`-Portfolio Directive`** | Removes the balanced active exploration/exploitation directives, defaulting to standard systematic local optimization prompts. |
+| **`D`** | **`-Mechanism`** | Retains general reaction context but strips out the specific hypothesized Pd(II)/Pd(0) mechanism pathway guidelines. |
+| **`E`** | **`-Chemical Blackout`** | Strips all reaction descriptions and mechanistic guides; the LLM optimizes purely on structural patterns (but retains active portfolio directives). |
+| **`F`** | **`-Chem Blackout & -Portfolio`** | **Compound Ablation:** Complete chemical blackout combined with removal of portfolio search directives. Tests whether chemistry-free search survives without strategy guidelines. |
+| **`G`** | **`Full Ablation`** | Combines B, C, E. Raw SMILES + insertion order + no portfolio + chemical blackout (purely blind tabular optimization). |
+| **`all`** | **`All Modes`** | Sequentially runs all modes (A through G) and generates high-quality comparison charts of their convergence performance. |
 
 #### Optional CLI Arguments
 * `--campaigns <int>`: Number of parallel active learning campaigns to execute (default: `5`).

@@ -18,7 +18,7 @@ def main():
                         required=True, help="Select which module to run.")
     from src.ablation import AVAILABLE_ABLATION_MODES
     parser.add_argument("--ablation", choices=["all", *AVAILABLE_ABLATION_MODES], default="A",
-                        help="Select prospective ablation mode (A=Baseline, B=-SAR Ladder, C=-Portfolio Directive, D=-SMILES Shuffle, E=-Mechanism, F=-Chemical Blackout, G=-Chem Blackout & -Portfolio (C+F), H=Full Ablation, or 'all').")
+                        help="Select prospective ablation mode (A=Baseline (Canonical + Full Pipeline), B=-SAR Ladder & Raw SMILES, C=-Portfolio Directive, D=-Mechanism, E=-Chemical Blackout, F=-Chem Blackout & -Portfolio, G=Full Ablation, or 'all').")
     parser.add_argument("--model", type=str, default="google/gemini-3.5-flash",
                         help="Select model to run for prospective case.")
     parser.add_argument("--campaigns", type=int, default=5,

@@ -5,17 +5,16 @@ import matplotlib.pyplot as plt
 
 from src.runner import run_prospective_experiment
 
-AVAILABLE_ABLATION_MODES = ["A", "B", "C", "D", "E", "F", "G", "H"]
+AVAILABLE_ABLATION_MODES = ["A", "B", "C", "D", "E", "F", "G"]
 
 STYLE_CONFIGS = {
-    "A": {"color": "#4285F4", "label": "A (Baseline / Full Pipeline)", "marker": "o"},
-    "B": {"color": "#D97757", "label": "B (-SAR Ladder)", "marker": "s"},
+    "A": {"color": "#4285F4", "label": "A (Baseline / Canonical + Full Pipeline)", "marker": "o"},
+    "B": {"color": "#D97757", "label": "B (-SAR Ladder & Raw SMILES)", "marker": "s"},
     "C": {"color": "#9b59b6", "label": "C (-Portfolio Directive)", "marker": "d"},
-    "D": {"color": "#2ecc71", "label": "D (-SMILES Shuffle)", "marker": "v"},
-    "E": {"color": "#f1c40f", "label": "E (-Mechanism)", "marker": "<"},
-    "F": {"color": "#e67e22", "label": "F (-Chemical Info / Blackout)", "marker": ">"},
-    "G": {"color": "#a0522d", "label": "G (-Chem Blackout & -Portfolio / C+F)", "marker": "p"},
-    "H": {"color": "#E74C3C", "label": "H (Full Ablation / All Combined)", "marker": "x"}
+    "D": {"color": "#f1c40f", "label": "D (-Mechanism)", "marker": "<"},
+    "E": {"color": "#e67e22", "label": "E (-Chemical Info / Blackout)", "marker": ">"},
+    "F": {"color": "#a0522d", "label": "F (-Chem Blackout & -Portfolio)", "marker": "p"},
+    "G": {"color": "#E74C3C", "label": "G (Full Ablation / All Combined)", "marker": "x"}
 }
 
 
@@ -73,16 +72,22 @@ def run_all_ablations_experiment(model="google/gemini-3.5-flash", campaigns=5, s
     return output_path
 
 
-def plot_ablation_comparison(ablation_results, model_name, steps_count=14, output_path=None):
-    """Plot the ablation-mode convergence results and save an output PNG."""
+def plot_ablation_comparison(ablation_results, model_name, steps_count=14, output_path=None,
+                             modes_subset=None, title=None):
+    """Plot the ablation-mode convergence results and save an output PNG.
+
+    modes_subset: optional list of mode keys (e.g. ["A","B","C","D"]) to restrict the plot to.
+    title: optional custom plot title.
+    """
     if output_path is None:
         output_path = "output/generative_active_learning_ablation_comparison.png" if len(ablation_results) != 1 else f"output/generative_active_learning_ablation_{next(iter(ablation_results))}.png"
 
     fig, ax = plt.subplots(figsize=(12.5, 8.5))
     steps = np.arange(1, steps_count + 1)
 
-    # Sort available modes logically A to H
-    sorted_modes = [m for m in AVAILABLE_ABLATION_MODES if m in ablation_results]
+    # Sort available modes logically A to H, optionally restricted to a subset
+    allowed = modes_subset if modes_subset is not None else AVAILABLE_ABLATION_MODES
+    sorted_modes = [m for m in allowed if m in ablation_results]
 
     for mode in sorted_modes:
         runs = ablation_results[mode]
@@ -98,11 +103,15 @@ def plot_ablation_comparison(ablation_results, model_name, steps_count=14, outpu
             # Count how many campaigns reached or exceeded 89% yield
             success_count = sum(1 for run in runs if max(run) >= 89.0)
             total_runs = len(runs)
+            
+            # Calculate the peak yield achieved by each run, and find the worst of these peaks
+            peak_yields = [max(run) for run in runs]
+            worst_peak = min(peak_yields)
         except Exception:
             continue
 
         config = STYLE_CONFIGS.get(mode, {"color": "#888888", "label": mode, "marker": "o"})
-        label_with_success = f"{config['label']} ({success_count}/{total_runs} hit 89%)"
+        label_with_success = f"{config['label']} ({success_count}/{total_runs} hit 89% | worst peak: {worst_peak:.1f}%)"
         
         # Plot the main trajectory line
         ax.plot(steps, mean_yield, color=config["color"], linestyle="-", 
@@ -121,7 +130,8 @@ def plot_ablation_comparison(ablation_results, model_name, steps_count=14, outpu
     ax.set_ylim(30, 95)
     ax.grid(True, linestyle="--", alpha=0.5)
     
-    ax.set_title(f"Active Learning Ablation Analysis: {model_name.split('/')[-1]}", fontsize=15, fontweight="bold", pad=15)
+    plot_title = title if title else f"Active Learning Ablation Analysis: {model_name.split('/')[-1]}"
+    ax.set_title(plot_title, fontsize=15, fontweight="bold", pad=15)
     
     # Position the legend beautifully inside the bottom right of the plot area
     ax.legend(loc="lower right", fontsize=10.5, frameon=True, facecolor="white", edgecolor="none", shadow=False)
@@ -130,3 +140,50 @@ def plot_ablation_comparison(ablation_results, model_name, steps_count=14, outpu
     plt.savefig(output_path, dpi=300)
     print(f"\n-> Ablation plot successfully saved to '{output_path}'.")
     plt.close()
+
+
+def load_all_ablation_results():
+    """Load every available ablation_results_{mode}.json from output/ into a dict."""
+    ablation_results = {}
+    for m in AVAILABLE_ABLATION_MODES:
+        json_path = f"output/ablation_results_{m}.json"
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, "r") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        val = next(iter(data.values()))
+                        ablation_results[m] = val if isinstance(val, list) else data
+                    else:
+                        ablation_results[m] = data
+            except Exception:
+                pass
+    return ablation_results
+
+
+def plot_grouped_ablations(model_name="google/gemini-3.5-flash", steps_count=14):
+    """Generate the two focused narrative plots from all saved ablation results.
+
+    Plot 1 (A,B,C,G): power of added computational-science (CS) scaffolding tools
+                      (SAR ladder, canonical SMILES, portfolio search) -> better
+                      reproducibility, lower variance, faster optimization.
+    Plot 2 (A,D,E,F): power of chemical rationale, the surprising strength of
+                      CS-only search, and that no info beats partial info.
+    """
+    ablation_results = load_all_ablation_results()
+
+    path1 = "output/ablation_group_CS_tools_ABCG.png"
+    plot_ablation_comparison(
+        ablation_results, model_name, steps_count=steps_count, output_path=path1,
+        modes_subset=["A", "B", "C", "G"],
+        title="Impact of Computational Scaffolding Tools (A vs B, C, G)"
+    )
+
+    path2 = "output/ablation_group_chemical_knowledge_ADEF.png"
+    plot_ablation_comparison(
+        ablation_results, model_name, steps_count=steps_count, output_path=path2,
+        modes_subset=["A", "D", "E", "F"],
+        title="Impact of Chemical Knowledge (A vs D, E, F)"
+    )
+
+    return path1, path2

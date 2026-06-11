@@ -251,7 +251,7 @@ def run_prospective_campaign(campaign_id, model_name, surrogate, fp_gen, dataset
                     mol_obj = Chem.MolFromSmiles(smiles_val)
                     smiles_to_store = Chem.MolToSmiles(mol_obj, canonical=True) if mol_obj else smiles_val
                 except Exception: smiles_to_store = smiles_val
-                history_records.append({"yield": yield_val, "smiles": smiles_to_store, "comment": None})
+                history_records.append({"yield": yield_val, "smiles": smiles_to_store, "raw_smiles": smiles_val, "comment": None})
 
     TOTAL_ITERATIONS = total_iterations
     max_yield_history = []
@@ -265,34 +265,42 @@ def run_prospective_campaign(campaign_id, model_name, surrogate, fp_gen, dataset
             return 0.0
 
     for iteration in range(1, TOTAL_ITERATIONS + 1):
-        # 1. Manage SAR Ladder Sorting / Shuffling (Ablation B, H)
+        # ===== NEW CANONICAL-FIRST ABLATION SCHEMA (A-G) =====
+        # A = Baseline: Canonical SMILES + SAR ladder sort + Portfolio + Full chemistry
+        # B = A - SAR ladder (insertion order) - SMILES canonicalization (raw as-written SMILES)
+        # C = A - Portfolio directive
+        # D = A - Mechanism (reaction context kept)
+        # E = A - Chemistry (full chemical blackout)
+        # F = A - Chemistry - Portfolio
+        # G = Full ablation (raw SMILES + insertion order + no portfolio + chemical blackout)
+
+        # 1. Manage SAR Ladder Sorting (kept for all except B and G, which use raw insertion order)
         current_history = list(history_records)
-        if ablation_mode in ["B", "H"]:
-            import random
-            random.shuffle(current_history)
+        if ablation_mode in ["B", "G"]:
+            pass  # Keep the chronological order in which results arrived (no SAR ladder)
         else:
             current_history.sort(key=get_yield_num, reverse=True)
 
-        # 2. Manage SMILES Shuffle (Ablation D, H)
+        # 2. Manage SMILES representation (canonical for all except B and G, which use raw as-written)
         shuffled_history_lines = []
         for record in current_history:
             try:
                 mol_obj = Chem.MolFromSmiles(record["smiles"])
-                if mol_obj:
-                    if ablation_mode in ["D", "H"]:
-                        enumerated_smiles = Chem.MolToSmiles(mol_obj, canonical=True)
-                    else:
-                        enumerated_smiles = Chem.MolToSmiles(mol_obj, doRandom=True)
+                if ablation_mode in ["B", "G"]:
+                    # Use the SMILES exactly as written by the LLM / as it came from the DB
+                    enumerated_smiles = record.get("raw_smiles", record["smiles"])
+                elif mol_obj:
+                    enumerated_smiles = Chem.MolToSmiles(mol_obj, canonical=True)
                 else:
-                    enumerated_smiles = record["smiles"]
+                    enumerated_smiles = record.get("raw_smiles", record["smiles"])
             except Exception: 
-                enumerated_smiles = record["smiles"]
+                enumerated_smiles = record.get("raw_smiles", record["smiles"])
             shuffled_history_lines.append(f"{record['yield']}\t{enumerated_smiles}")
             
         history_text_for_llm = "\n".join(shuffled_history_lines)
 
-        # 3. Manage Portfolio Directive (Ablation C, G, H)
-        if ablation_mode in ["C", "G", "H"]:
+        # 3. Manage Portfolio Directive (kept for all except C, F, G)
+        if ablation_mode in ["C", "F", "G"]:
             directive = "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history."
         else:
             # Dynamically split mid-way if total iterations are customized
@@ -302,11 +310,11 @@ def run_prospective_campaign(campaign_id, model_name, surrogate, fp_gen, dataset
         sys_prompt = PROSPECTIVE_SYSTEM_PROMPT.format(iteration=iteration, total_iterations=TOTAL_ITERATIONS, portfolio_directive=directive)
 
         # 4. Manage Mechanism / Chemical stripping
-        if ablation_mode == "E":
+        if ablation_mode == "D":
             # Strip mechanism but keep reaction context
             guidelines_str = "Mechanistic guidelines:\nA Pd(II)/Pd(0)/Pd(II)/Pd(0) catalytic cycle is hypothesized to account for the one-step butenolide formation. In the proposed catalytic cycle, the reaction starts with a ligand-enabled beta,gamma-dehydrogenation to form a Pd(0) species, which is then reoxidized by TBHP to a Pd(II) species. Subsequently, Pd(II)-catalyzed nucleophilic cyclization of the carboxylate onto the double bond occurs to form a lactone bearing a C–Pd bond at the beta position. Finally, a site-selective beta-hydride elimination provides the butenolide product and a Pd(0) species, which is reoxidized by TBHP to a Pd(II) species to close the catalytic cycle."
             sys_prompt = sys_prompt.replace(guidelines_str, "Mechanistic guidelines:\nNone provided. Optimize based on general ligand design principles.")
-        elif ablation_mode in ["F", "G", "H"]:
+        elif ablation_mode in ["E", "F", "G"]:
             # Chemical Blackout: Strip both reaction context and mechanism completely!
             guidelines_str = "Mechanistic guidelines:\nA Pd(II)/Pd(0)/Pd(II)/Pd(0) catalytic cycle is hypothesized to account for the one-step butenolide formation. In the proposed catalytic cycle, the reaction starts with a ligand-enabled beta,gamma-dehydrogenation to form a Pd(0) species, which is then reoxidized by TBHP to a Pd(II) species. Subsequently, Pd(II)-catalyzed nucleophilic cyclization of the carboxylate onto the double bond occurs to form a lactone bearing a C–Pd bond at the beta position. Finally, a site-selective beta-hydride elimination provides the butenolide product and a Pd(0) species, which is reoxidized by TBHP to a Pd(II) species to close the catalytic cycle."
             context_str = "Reaction context: This is a palladium-catalyzed structural-oriented C-H activation reaction aiming to construct densely functionalized butenolides from aliphatic acids via triple C(sp3)-H functionalizations."
@@ -362,7 +370,7 @@ def run_prospective_campaign(campaign_id, model_name, surrogate, fp_gen, dataset
         for smiles in smiles_list:
             chosen_yield, stored_smiles = score_ligand(smiles, surrogate, fp_gen, dataset_dict, history_records)
             step_yields.append(chosen_yield)
-            history_records.append({"yield": f"{int(round(chosen_yield))}%", "smiles": stored_smiles, "comment": None})
+            history_records.append({"yield": f"{int(round(chosen_yield))}%", "smiles": stored_smiles, "raw_smiles": smiles, "comment": None})
             scored_details.append({
                 "proposed_smiles": smiles,
                 "canonical_smiles": stored_smiles,
