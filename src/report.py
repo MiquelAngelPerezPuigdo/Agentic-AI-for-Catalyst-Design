@@ -113,9 +113,9 @@ def plot_level_hierarchy(csv_path="output/benchmark2_results.csv"):
         
     print(f"[+] Benchmark 2 plots successfully saved to the output/ directory.")
 
-def plot_prospective_convergence(results_dict, output_path="output/generative_benchmark.png"):
+def plot_prospective_convergence(results_dict, output_path="output/generative_benchmark.png", steps_count=14):
     plt.figure(figsize=(11, 7))
-    steps = np.arange(1, 15) # 14 Iterations
+    steps = np.arange(1, steps_count + 1) # Customizable Iterations
     
     # Custom colors mapping for specific models if they are used
     colors = {"google/gemini-3.1-pro-preview": "#4285F4", "anthropic/claude-opus-4.8": "#D97757", "openai/gpt-5.5": "#6A737D"}

@@ -80,3 +80,48 @@ PROMPTS_JSON_MODE = {
 
 ALL_LEVEL_KEYS = list(PROMPTS_TEXT_MODE.keys()) + list(PROMPTS_JSON_MODE.keys())
 
+# --- PROSPECTIVE ACTIVE LEARNING PROMPTS ---
+PROSPECTIVE_EXPLORE_DIRECTIVE = """SEARCH POLICY: MAXIMIZE EXPECTED VALUE OF INFORMATION (MIG/UCB)
+
+You are currently operating under an active exploration policy designed to maximize information gain across the local chemical space.
+
+Critical Analytical Directive:
+1. Review the historical dataset and identify regions of 'High-Density Stagnation' (structural vectors where multiple sequential modifications have been performed, but yields have remained static or tightly bounded, e.g., delta-yield < 5%).
+2. Mathematically recognize that the local sensitivity coefficient for these saturated vectors has approached zero. Continuing to propose modifications within a stagnant structural envelope represents an incompetent search policy.
+3. For this round, you are strictly commanded to calculate an orthogonal structural vector. Identify the invariant core nodes or sub-graphs of your highest-performing candidate that have been left completely un-functionalized across the entire history campaign. Direct your generation capacity to perform structural alterations, electronic tuning, or atom-swaps exclusively on those unmapped coordinates.
+
+Your 'JUSTIFICATION' section must explicitly identify the stagnant vector you are abandoning and outline the chemical reasoning behind the unmapped structural coordinate you are choosing to activate."""
+
+PROSPECTIVE_EXPLOIT_DIRECTIVE = """SEARCH POLICY: MAXIMUM LIKELIHOOD EXPLOITATION (LOCAL CONVERGENCE)
+
+The wide exploration phase is concluded. Your sole objective is local coordinate optimization to maximize reaction yield based on the top performing hits.
+
+Identify the single highest-yielding structural coordinate cluster in the history. Focus 100 per cent of your proposal capacity on performing cooperative, low-risk micro-tuning (combining successful electronic and steric features discovered across the campaign) to drive this specific framework to a 95%+ convergence profile."""
+
+PROSPECTIVE_SYSTEM_PROMPT = """You are an organic chemistry expert specializing in catalysis. You have to efficiently navigate the chemical landscape of new ligands for reaction discovery by balancing systematic lead optimization and rational structural exploration.
+
+Reaction context: This is a palladium-catalyzed structural-oriented C-H activation reaction aiming to construct densely functionalized butenolides from aliphatic acids via triple C(sp3)-H functionalizations.
+
+Mechanistic guidelines:
+A Pd(II)/Pd(0)/Pd(II)/Pd(0) catalytic cycle is hypothesized to account for the one-step butenolide formation. In the proposed catalytic cycle, the reaction starts with a ligand-enabled beta,gamma-dehydrogenation to form a Pd(0) species, which is then reoxidized by TBHP to a Pd(II) species. Subsequently, Pd(II)-catalyzed nucleophilic cyclization of the carboxylate onto the double bond occurs to form a lactone bearing a C–Pd bond at the beta position. Finally, a site-selective beta-hydride elimination provides the butenolide product and a Pd(0) species, which is reoxidized by TBHP to a Pd(II) species to close the catalytic cycle.
+
+CAMPAIGN PROGRESS COUNTDOWN: {iteration}/{total_iterations}
+
+{portfolio_directive}
+
+Your objective: Review the historical screening data and propose exactly 3 new ligands satisfying this balanced design portfolio.
+
+CRITICAL SYSTEM DIRECTIVE: AVOID THE CONTEXT-DRIVEN LOCAL MINIMUM TRAP
+
+You must structure your output into TWO parts:
+1. A thorough 'JUSTIFICATION' section explaining your chemical reasoning for this design round.
+2. A raw JSON block containing exactly 3 next proposed SMILES strings in this structure:
+```json
+[
+ {{"smiles": "SMILES_1"}},
+ {{"smiles": "SMILES_2"}},
+ {{"smiles": "SMILES_3"}}
+]
+```"""
+
+

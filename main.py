@@ -16,6 +16,17 @@ def main():
     parser = argparse.ArgumentParser(description="LLM Chemistry Benchmark Suite")
     parser.add_argument("--mode", choices=["benchmark1", "benchmark2", "prospective"], 
                         required=True, help="Select which module to run.")
+    from src.ablation import AVAILABLE_ABLATION_MODES
+    parser.add_argument("--ablation", choices=["all", *AVAILABLE_ABLATION_MODES], default="A",
+                        help="Select prospective ablation mode (A=Baseline, B=-SAR Ladder, C=-Portfolio Directive, D=-SMILES Shuffle, E=-Mechanism, F=-Chemical Blackout, G=-Chem Blackout & -Portfolio (C+F), H=Full Ablation, or 'all').")
+    parser.add_argument("--model", type=str, default="google/gemini-3.5-flash",
+                        help="Select model to run for prospective case.")
+    parser.add_argument("--campaigns", type=int, default=5,
+                        help="Number of active learning campaigns (default: 5).")
+    parser.add_argument("--steps", type=int, default=14,
+                        help="Number of prospective optimization steps / iterations (default: 14).")
+    parser.add_argument("--save-details", action="store_true",
+                        help="Save complete LLM justification, smiles, and step-by-step progress details.")
     args = parser.parse_args()
 
     # Ensure output directory exists
@@ -72,23 +83,17 @@ def main():
     # PROSPECTIVE CASE
     # ==========================================
     elif args.mode == "prospective":
-        print("\nInitializing Prospective Active Learning Case...")
-        from src.runner import run_prospective_experiment
-        from src.report import plot_prospective_convergence
+        print(f"\nInitializing Prospective Active Learning Case with Ablation Mode {args.ablation}...")
+        from src.ablation import run_all_ablations_experiment
         
-        # The 3 specific frontier models you defined for this test
-        target_models = [
-            "google/gemini-3.1-pro-preview", 
-            "anthropic/claude-opus-4.8", 
-            "openai/gpt-5.5"
-        ]
-        
-        # Launch the multithreaded AI discovery loops!
-        results_dict = run_prospective_experiment(target_models, num_campaigns=5)
-        
-        # Plot the AI convergence trajectories
-        plot_prospective_convergence(results_dict, output_path="output/generative_active_learning.png")
-        print("\nProspective Case complete! Check the 'output/' folder.")
+        output_path = run_all_ablations_experiment(
+            model=args.model,
+            campaigns=args.campaigns,
+            steps=args.steps,
+            target_mode=args.ablation,
+            save_details=args.save_details
+        )
+        print(f"\nProspective Case (Ablation {args.ablation}) complete! Plot saved to {output_path}.")
 
 if __name__ == "__main__":
     main()

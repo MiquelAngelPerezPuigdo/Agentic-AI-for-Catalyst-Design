@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Models
 FRONTIER_MODELS = [

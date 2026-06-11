@@ -228,18 +228,17 @@ def clean_json_markdown(text):
     if bracket_match: return bracket_match.group(0)
     return text
 
-def run_prospective_campaign(campaign_id, model_name):
+def run_prospective_campaign(campaign_id, model_name, surrogate, fp_gen, dataset_dict, ablation_mode="A", total_iterations=14, save_details=False):
     # Only import heavy dependencies if this function is actually called
     try:
         from rdkit import Chem
-        from src.surrogate import init_surrogate, score_ligand
-        surrogate, fp_gen, dataset_dict = init_surrogate()
+        from src.surrogate import score_ligand
     except ImportError:
         return [] # Returns empty if RDkit isn't installed
 
     from src.prompts import PROSPECTIVE_EXPLORE_DIRECTIVE, PROSPECTIVE_EXPLOIT_DIRECTIVE, PROSPECTIVE_SYSTEM_PROMPT
     
-    print(f"[{model_name.split('/')[-1]} | Campaign {campaign_id}] Starting...")
+    print(f"[{model_name.split('/')[-1]} | Campaign {campaign_id} | Ablation {ablation_mode}] Starting with {total_iterations} steps...")
     history_records = []
     
     for line in INITIAL_SEED.strip().split("\n"):
@@ -254,30 +253,76 @@ def run_prospective_campaign(campaign_id, model_name):
                 except Exception: smiles_to_store = smiles_val
                 history_records.append({"yield": yield_val, "smiles": smiles_to_store, "comment": None})
 
-    TOTAL_ITERATIONS = 14
+    TOTAL_ITERATIONS = total_iterations
     max_yield_history = []
     current_global_max = 0.0
+    campaign_logs = []
+
+    def get_yield_num(record):
+        try:
+            return float(record["yield"].replace("%", "").strip())
+        except Exception:
+            return 0.0
 
     for iteration in range(1, TOTAL_ITERATIONS + 1):
+        # 1. Manage SAR Ladder Sorting / Shuffling (Ablation B, H)
+        current_history = list(history_records)
+        if ablation_mode in ["B", "H"]:
+            import random
+            random.shuffle(current_history)
+        else:
+            current_history.sort(key=get_yield_num, reverse=True)
+
+        # 2. Manage SMILES Shuffle (Ablation D, H)
         shuffled_history_lines = []
-        for record in history_records:
+        for record in current_history:
             try:
                 mol_obj = Chem.MolFromSmiles(record["smiles"])
-                enumerated_smiles = Chem.MolToSmiles(mol_obj, doRandom=True) if mol_obj else record["smiles"]
-            except Exception: enumerated_smiles = record["smiles"]
+                if mol_obj:
+                    if ablation_mode in ["D", "H"]:
+                        enumerated_smiles = Chem.MolToSmiles(mol_obj, canonical=True)
+                    else:
+                        enumerated_smiles = Chem.MolToSmiles(mol_obj, doRandom=True)
+                else:
+                    enumerated_smiles = record["smiles"]
+            except Exception: 
+                enumerated_smiles = record["smiles"]
             shuffled_history_lines.append(f"{record['yield']}\t{enumerated_smiles}")
             
         history_text_for_llm = "\n".join(shuffled_history_lines)
-        directive = PROSPECTIVE_EXPLORE_DIRECTIVE if iteration <= 7 else PROSPECTIVE_EXPLOIT_DIRECTIVE
+
+        # 3. Manage Portfolio Directive (Ablation C, G, H)
+        if ablation_mode in ["C", "G", "H"]:
+            directive = "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history."
+        else:
+            # Dynamically split mid-way if total iterations are customized
+            explore_limit = max(1, TOTAL_ITERATIONS // 2)
+            directive = PROSPECTIVE_EXPLORE_DIRECTIVE if iteration <= explore_limit else PROSPECTIVE_EXPLOIT_DIRECTIVE
         
         sys_prompt = PROSPECTIVE_SYSTEM_PROMPT.format(iteration=iteration, total_iterations=TOTAL_ITERATIONS, portfolio_directive=directive)
+
+        # 4. Manage Mechanism / Chemical stripping
+        if ablation_mode == "E":
+            # Strip mechanism but keep reaction context
+            guidelines_str = "Mechanistic guidelines:\nA Pd(II)/Pd(0)/Pd(II)/Pd(0) catalytic cycle is hypothesized to account for the one-step butenolide formation. In the proposed catalytic cycle, the reaction starts with a ligand-enabled beta,gamma-dehydrogenation to form a Pd(0) species, which is then reoxidized by TBHP to a Pd(II) species. Subsequently, Pd(II)-catalyzed nucleophilic cyclization of the carboxylate onto the double bond occurs to form a lactone bearing a C–Pd bond at the beta position. Finally, a site-selective beta-hydride elimination provides the butenolide product and a Pd(0) species, which is reoxidized by TBHP to a Pd(II) species to close the catalytic cycle."
+            sys_prompt = sys_prompt.replace(guidelines_str, "Mechanistic guidelines:\nNone provided. Optimize based on general ligand design principles.")
+        elif ablation_mode in ["F", "G", "H"]:
+            # Chemical Blackout: Strip both reaction context and mechanism completely!
+            guidelines_str = "Mechanistic guidelines:\nA Pd(II)/Pd(0)/Pd(II)/Pd(0) catalytic cycle is hypothesized to account for the one-step butenolide formation. In the proposed catalytic cycle, the reaction starts with a ligand-enabled beta,gamma-dehydrogenation to form a Pd(0) species, which is then reoxidized by TBHP to a Pd(II) species. Subsequently, Pd(II)-catalyzed nucleophilic cyclization of the carboxylate onto the double bond occurs to form a lactone bearing a C–Pd bond at the beta position. Finally, a site-selective beta-hydride elimination provides the butenolide product and a Pd(0) species, which is reoxidized by TBHP to a Pd(II) species to close the catalytic cycle."
+            context_str = "Reaction context: This is a palladium-catalyzed structural-oriented C-H activation reaction aiming to construct densely functionalized butenolides from aliphatic acids via triple C(sp3)-H functionalizations."
+            
+            sys_prompt = sys_prompt.replace(context_str, "Reaction context: This is an optimization run for a generic chemical synthesis reaction.")
+            sys_prompt = sys_prompt.replace(guidelines_str, "Mechanistic guidelines:\nNone provided. This is a blind search to optimize the yield of the target product based exclusively on structural patterns in the history.")
+
         user_prompt = f"Here is the history of tried ligands and their yields:\n\n{history_text_for_llm}\n\nThink carefully, output your justification, and provide your 3 next proposed ligands."
             
         max_gen_attempts = 5
+        raw_response = "API_ERROR_OR_UNPARSABLE"
         for attempt in range(max_gen_attempts):
             try:
-                # Reuses your clean API block!
+                # Reuses clean API block!
                 response = call_openrouter(model_name, user_prompt, system_prompt=sys_prompt) 
+                raw_response = response
                 json_str = clean_json_markdown(response)
                 proposed_ligands = json.loads(json_str.strip())
                 smiles_list = [item['smiles'] for item in proposed_ligands]
@@ -291,7 +336,10 @@ def run_prospective_campaign(campaign_id, model_name):
                     if m is None: raise ValueError("Invalid SMILES")
                     Chem.SanitizeMol(m)
                     can_s = Chem.MolToSmiles(m, canonical=True)
-                    if can_s in existing_canonicals or can_s in proposed_canonicals: raise ValueError("Duplicate SMILES")
+                    
+                    # 5. No duplicates checks (Ablation C was removed entirely, duplicates are never allowed now)
+                    if can_s in existing_canonicals or can_s in proposed_canonicals: 
+                        raise ValueError("Duplicate SMILES")
                     proposed_canonicals.append(can_s)
                 
                 break # Success! Break out of retry loop.
@@ -310,27 +358,85 @@ def run_prospective_campaign(campaign_id, model_name):
 
         # Evaluate and log
         step_yields = []
+        scored_details = []
         for smiles in smiles_list:
             chosen_yield, stored_smiles = score_ligand(smiles, surrogate, fp_gen, dataset_dict, history_records)
             step_yields.append(chosen_yield)
             history_records.append({"yield": f"{int(round(chosen_yield))}%", "smiles": stored_smiles, "comment": None})
+            scored_details.append({
+                "proposed_smiles": smiles,
+                "canonical_smiles": stored_smiles,
+                "yield": chosen_yield
+            })
             
         step_max = max(step_yields)
         if step_max > current_global_max: current_global_max = step_max
         max_yield_history.append(current_global_max)
-        print(f"[{model_name.split('/')[-1]} | Campaign {campaign_id}] Step {iteration}/14 complete. Max yield: {current_global_max:.1f}%")
+        
+        # Save step details if requested
+        if save_details:
+            step_log = {
+                "step": iteration,
+                "portfolio_directive": directive,
+                "raw_llm_response": raw_response,
+                "proposals": scored_details,
+                "step_max_yield": step_max,
+                "global_max_yield": current_global_max
+            }
+            campaign_logs.append(step_log)
+        
+        print(f"[{model_name.split('/')[-1]} | Campaign {campaign_id} | Ablation {ablation_mode}] Step {iteration}/{TOTAL_ITERATIONS} complete. Max yield: {current_global_max:.1f}%")
+        
+        # Early stopping if maximum possible database yield (89.0%) is achieved
+        if current_global_max >= 89.0:
+            print(f"[{model_name.split('/')[-1]} | Campaign {campaign_id} | Ablation {ablation_mode}] Target yield reached (89.0%+). Stopping early to save API cost!")
+            # Pad the remaining steps in history with current max yield so plotting and averaging remain fully consistent
+            remaining_steps = TOTAL_ITERATIONS - len(max_yield_history)
+            if remaining_steps > 0:
+                max_yield_history.extend([current_global_max] * remaining_steps)
+            break
             
+    # Save the detailed campaign logs if requested
+    if save_details:
+        log_file_path = f"output/campaign_details_{ablation_mode}_campaign_{campaign_id}.json"
+        try:
+            with open(log_file_path, "w") as f:
+                json.dump(campaign_logs, f, indent=4)
+            print(f"[+] Detailed campaign logs successfully saved to '{log_file_path}'.")
+        except Exception as e:
+            print(f"[!] Warning: Failed to save detailed campaign log: {e}")
+
     return max_yield_history
 
-def run_prospective_experiment(models, num_campaigns=5):
+def run_prospective_experiment(models, num_campaigns=5, ablation_mode="A", total_iterations=14, save_details=False):
     """Launches the full multithreaded AI discovery campaign suite."""
-    print(f"\n==================== STARTING PARALLEL ACTIVE LEARNING ====================")
+    print(f"\n==================== STARTING PARALLEL ACTIVE LEARNING (ABLATION: {ablation_mode}) ====================")
     results_dict = {m: [] for m in models}
     
+    # Initialize the surrogate once per experiments run
+    try:
+        from src.surrogate import init_surrogate
+        surrogate, fp_gen, dataset_dict = init_surrogate()
+    except Exception as e:
+        print(f"[!] Error initializing surrogate: {e}")
+        return results_dict
+
     for target_model in models:
-        print(f"\nDispatching {num_campaigns} AI Campaigns for {target_model.split('/')[-1]}...")
+        print(f"\nDispatching {num_campaigns} AI Campaigns for {target_model.split('/')[-1]} (Ablation {ablation_mode})...")
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_campaigns) as executor:
-            future_to_task = {executor.submit(run_prospective_campaign, i, target_model): i for i in range(1, num_campaigns + 1)}
+            future_to_task = {
+                executor.submit(
+                    run_prospective_campaign, 
+                    i, 
+                    target_model, 
+                    surrogate, 
+                    fp_gen, 
+                    dataset_dict, 
+                    ablation_mode=ablation_mode, 
+                    total_iterations=total_iterations, 
+                    save_details=save_details
+                ): i for i in range(1, num_campaigns + 1)
+            }
             for future in concurrent.futures.as_completed(future_to_task):
                 c_id = future_to_task[future]
                 try:

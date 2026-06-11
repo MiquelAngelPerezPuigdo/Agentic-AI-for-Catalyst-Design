@@ -65,10 +65,32 @@ python main.py --mode benchmark1
 python main.py --mode benchmark2
 ```
 
-### 3. Run Prospective Case (Active Learning)
+### 3. Run Prospective Case (Active Learning & Ablation Study)
 ```bash
-python main.py --mode prospective
+python main.py --mode prospective --ablation A --campaigns 5 --steps 14
 ```
+
+#### 🔬 Ablation Analysis Options
+The prospective active learning module includes a rigorous ablation suite to isolate which structural, policy, or domain knowledge features contribute to the LLM's design capabilities.
+
+You can select an ablation mode using the `--ablation` argument:
+
+| Mode | Name | Scientific Purpose |
+| :---: | :--- | :--- |
+| **`A`** | **Baseline (Full Pipeline)** | Evaluates the model with full structural sorting, SMILES randomizations, portfolio directives, and Pd-catalysis mechanism guidelines. |
+| **`B`** | **`-SAR Ladder`** | Shuffles the historical screening database randomly, destroying the structure-activity relationships (SAR) sorting order. |
+| **`C`** | **`-Portfolio Directive`** | Strips out the balanced active exploration/exploitation directives, defaulting to standard systematic local optimization prompts. |
+| **`D`** | **`-SMILES Shuffle`** | Disables random SMILES enumeration, forcing the model to only see static canonical SMILES representations. |
+| **`E`** | **`-Mechanism`** | Retains general reaction context but strips out the specific hypothesized Pd(II)/Pd(0) mechanism pathway guidelines. |
+| **`F`** | **`-Chemical Blackout`** | Strips all reaction descriptions and mechanistic guides; the LLM optimizes purely based on SMILES string patterns (but retains active portfolio explorer/exploit directives). |
+| **`G`** | **`-Chem Blackout & -Portfolio (C+F)`** | **Compound Ablation:** Complete chemical blackout combined with the removal of portfolio search policy directives. Tests if chemistry-free search can survive without strategy guidelines. |
+| **`H`** | **`Full Ablation`** | Combines B, C, D, and F. Strips all structural sorting, SMILES randomizations, exploration strategies, and chemical information (purely blind tabular optimization). |
+| **`all`** | **`All Modes`** | Sequentially runs all modes (A through H) and generates a high-quality comparison chart of their convergence performance. |
+
+#### Optional CLI Arguments
+* `--campaigns <int>`: Number of parallel active learning campaigns to execute (default: `5`).
+* `--steps <int>`: Number of iterative optimization steps per campaign (default: `14`).
+* `--save-details`: Saves raw LLM responses, proposed SMILES, canonical conversions, and step-by-step progress metrics as detailed JSON logs.
 
 ---
 
@@ -83,6 +105,7 @@ Agentic-AI-for-Catalyst-Design/
 ├── output/              # Generated results, plots, and CSV logs
 └── src/                 
     ├── api.py           # Robust OpenRouter API handling logic
+    ├── ablation.py      # Ablation study execution and comparative plotting
     ├── document.py      # PDF text extraction and cleaning
     ├── evaluation.py    # Metric calculation (Judge LLM, JSON parsers)
     ├── ligand_data.py   # Ground truth SMILES, metadata, and seed data
