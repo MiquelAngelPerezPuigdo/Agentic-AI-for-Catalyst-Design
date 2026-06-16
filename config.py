@@ -25,6 +25,12 @@ ALL_MODELS = FRONTIER_MODELS + OPEN_MODELS
 JUDGE_MODEL = "google/gemini-3.1-pro-preview"
 ITERATIONS = 5 
 
+# Prompt caching: when True, the benchmark runners "prime" the shared prompt prefix
+# with a single serial call per (combination) before fanning out the remaining
+# identical iterations in parallel, so they hit a warm provider-side cache.
+# Also enables explicit Anthropic `cache_control` breakpoints on the large static block.
+USE_PROMPT_CACHING = True
+
 # Publication Data ("publications/" folder)
 REACTIONS = {
     "MBH_Tertiary_Amine": {

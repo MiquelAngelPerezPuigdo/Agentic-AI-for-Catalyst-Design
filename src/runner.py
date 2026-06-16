@@ -5,6 +5,10 @@ from src.api import call_openrouter
 from src.evaluation import evaluate_response
 from src.prompts import PROMPT_TEMPLATE
 from config import ALL_MODELS, FRONTIER_MODELS, ITERATIONS, JUDGE_MODEL
+try:
+    from config import USE_PROMPT_CACHING
+except ImportError:
+    USE_PROMPT_CACHING = False
 # --- ADDED FOR BENCHMARK 2: LIGAND RANKING ---
 from src.ligand_data import RANKING_TASKS
 from src.prompts import PROMPTS_TEXT_MODE, PROMPTS_JSON_MODE, SYSTEM_PROMPT_JSON, ALL_LEVEL_KEYS
@@ -78,25 +82,63 @@ def run_fair_experiment(reactions_dict, max_workers=5):
     results = []
     print(f"\nPhase 2: Benchmarking all models (Parallelized with {max_workers} workers)...")
     
-    tasks = []
+    # A "group" is one (model, reaction, context) combination whose ITERATIONS calls
+    # share a byte-identical prompt (including the up-to-50k-char paper context).
+    groups = []
     for model in ALL_MODELS:
         for rxn_key, rxn_data in reactions_dict.items():
             for use_context in [True, False]:
-                for i in range(ITERATIONS):
-                    tasks.append((model, rxn_key, rxn_data, use_context, i))
-                    
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_task = {
-            executor.submit(process_single_task, *task_args): task_args 
-            for task_args in tasks
-        }
-        
-        for future in tqdm(concurrent.futures.as_completed(future_to_task), total=len(tasks), desc="API Calls"):
-            try:
-                result = future.result()
-                results.append(result)
-            except Exception as exc:
-                print(f"\n[!] A task generated an exception: {exc}")
+                groups.append((model, rxn_key, rxn_data, use_context))
+
+    if USE_PROMPT_CACHING and ITERATIONS > 1:
+        # Prime-then-fan-out: run iteration 0 of every group first (in parallel across
+        # groups) to warm each provider-side cache, THEN submit the remaining identical
+        # iterations so they read the cached prefix instead of re-paying for prefill.
+        print("-> Prompt caching ON: priming shared prompt prefixes before fan-out...")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Phase 2a: prime one call per group.
+            prime_futures = {
+                executor.submit(process_single_task, model, rxn_key, rxn_data, use_context, 0): (model, rxn_key, rxn_data, use_context)
+                for (model, rxn_key, rxn_data, use_context) in groups
+            }
+            for future in tqdm(concurrent.futures.as_completed(prime_futures), total=len(prime_futures), desc="Priming caches"):
+                try:
+                    results.append(future.result())
+                except Exception as exc:
+                    print(f"\n[!] A priming task generated an exception: {exc}")
+
+            # Phase 2b: fan out the remaining ITERATIONS-1 calls per group (cache hits).
+            fanout_tasks = [
+                (model, rxn_key, rxn_data, use_context, i)
+                for (model, rxn_key, rxn_data, use_context) in groups
+                for i in range(1, ITERATIONS)
+            ]
+            fanout_futures = {
+                executor.submit(process_single_task, *task_args): task_args
+                for task_args in fanout_tasks
+            }
+            for future in tqdm(concurrent.futures.as_completed(fanout_futures), total=len(fanout_futures), desc="API Calls (cached)"):
+                try:
+                    results.append(future.result())
+                except Exception as exc:
+                    print(f"\n[!] A task generated an exception: {exc}")
+    else:
+        tasks = [
+            (model, rxn_key, rxn_data, use_context, i)
+            for (model, rxn_key, rxn_data, use_context) in groups
+            for i in range(ITERATIONS)
+        ]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_task = {
+                executor.submit(process_single_task, *task_args): task_args 
+                for task_args in tasks
+            }
+            for future in tqdm(concurrent.futures.as_completed(future_to_task), total=len(tasks), desc="API Calls"):
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception as exc:
+                    print(f"\n[!] A task generated an exception: {exc}")
 
     df = pd.DataFrame(results)
     return df
@@ -168,19 +210,50 @@ def run_ligand_experiment(max_workers=5, required_iterations=5, max_attempts=20)
     print(f"\nPhase 2: Benchmarking Ligand Ranking (Parallelized with {max_workers} workers)...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_info = {}
-        
-        # 1. Submit initial tasks (exactly required_iterations per combination)
-        for (model, task_key, level_name), tracker in trackers.items():
-            task_data = RANKING_TASKS[task_key]
-            for i in range(required_iterations):
-                future = executor.submit(process_ligand_task, model, task_key, level_name, i, task_data)
-                future_to_info[future] = (model, task_key, level_name, i, task_data)
-                tracker["attempts_submitted"] += 1
-                tracker["pending_attempts"] += 1
 
         # Use a progress bar for the total expected successes
         total_required_successes = len(trackers) * required_iterations
         pbar = tqdm(total=total_required_successes, desc="Ligand Successes")
+
+        # 0. (Optional) Prime each combination's shared prompt prefix with ONE serial-per-group
+        #    call before fan-out, so the remaining identical iterations hit a warm cache.
+        #    Levels 5 & 6 embed full paper text, so this prefix is large and worth caching.
+        if USE_PROMPT_CACHING and required_iterations > 1:
+            print("-> Prompt caching ON: priming shared prompt prefixes before fan-out...")
+            prime_futures = {}
+            for (model, task_key, level_name), tracker in trackers.items():
+                task_data = RANKING_TASKS[task_key]
+                future = executor.submit(process_ligand_task, model, task_key, level_name, 0, task_data)
+                prime_futures[future] = (model, task_key, level_name, 0, task_data)
+                tracker["attempts_submitted"] += 1
+            for future in tqdm(concurrent.futures.as_completed(prime_futures), total=len(prime_futures), desc="Priming caches"):
+                model, task_key, level_name, _, task_data = prime_futures[future]
+                tracker = trackers[(model, task_key, level_name)]
+                try:
+                    res = future.result()
+                except Exception as e:
+                    print(f"\n[!] Exception during priming for {model.split('/')[-1]} on {task_key}/{level_name}: {e}")
+                    res = None
+                if res:
+                    res["Iteration"] = tracker["successes_got"]
+                    results.append(res)
+                    tracker["successes_got"] += 1
+                    pbar.update(1)
+
+        # 1. Submit initial tasks. With priming, one attempt per group already ran, so we
+        #    fan out the remaining (required_iterations - primed) attempts; otherwise submit
+        #    the full required_iterations as before.
+        primed = USE_PROMPT_CACHING and required_iterations > 1
+        for (model, task_key, level_name), tracker in trackers.items():
+            task_data = RANKING_TASKS[task_key]
+            initial_to_submit = (required_iterations - 1) if primed else required_iterations
+            start_idx = tracker["attempts_submitted"]
+            for offset in range(initial_to_submit):
+                i = start_idx + offset
+                future = executor.submit(process_ligand_task, model, task_key, level_name, i, task_data)
+                future_to_info[future] = (model, task_key, level_name, i, task_data)
+                tracker["attempts_submitted"] += 1
+                tracker["pending_attempts"] += 1
         
         while future_to_info:
             # Wait for any future to complete

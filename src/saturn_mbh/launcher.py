@@ -123,6 +123,7 @@ def render_config(
     prior: str,
     seed: int,
     device: str,
+    use_prompt_caching: bool = True,
 ) -> Path:
     """Write a Saturn goal-directed-generation config JSON for the MBH campaign.
 
@@ -152,6 +153,7 @@ def render_config(
                         "num_calls": num_calls,
                         "batch_size": batch_size,
                         "rate_limit_delay": 1.0,
+                        "use_prompt_caching": use_prompt_caching,
                     },
                     "reward_shaping_function_parameters": {
                         "transformation_function": "sigmoid",
@@ -232,6 +234,7 @@ def run_mbh_campaign(
     device: str = "cuda",
     api_key: str | None = None,
     dry_run: bool = False,
+    use_prompt_caching: bool = True,
 ) -> Path:
     """Inject the MBH oracle into Saturn and launch a de novo MBH design campaign.
 
@@ -269,6 +272,7 @@ def run_mbh_campaign(
         prior=prior,
         seed=seed,
         device=device,
+        use_prompt_caching=use_prompt_caching,
     )
 
     print(f"[+] Saturn home:   {saturn_path}")

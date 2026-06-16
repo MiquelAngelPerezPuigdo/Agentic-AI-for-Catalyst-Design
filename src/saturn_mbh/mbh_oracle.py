@@ -116,64 +116,99 @@ class MBHcatalystscore(OracleComponent):
         self.batch_size = int(sp.get("batch_size", 16))
         self.rate_limit_delay = float(sp.get("rate_limit_delay", 1.0))
         self.max_tokens = int(sp.get("max_tokens", 4096))
+        # Prompt caching: the large static MBH-mechanism block is identical across
+        # every batch and across the `num_calls` replicate calls, so it is an ideal
+        # cache prefix. Enabled by default; controlled from the Saturn config JSON.
+        self.use_prompt_caching = bool(sp.get("use_prompt_caching", True))
 
-    def _build_batch_prompt(self, smiles_map: dict) -> str:
-        """Heavily contextualized MBH-mechanism prompt over a JSON map of {index: SMILES}."""
-        smiles_list_str = json.dumps(smiles_map, indent=2)
-        return (
-            "You are an expert physical organic chemist evaluating molecules for the discovery of new tertiary amines that can catalyze the Morita-Baylis-Hillman (MBH) reaction.\n"
-            "Consider the Morita-Baylis-Hillman (MBH) reaction of methyl acrylate (MA) "
-            "with p-nitrobenzaldehyde (pNBA) in methanol.\n\n"
+    # The static instruction block is constant for the entire campaign, so it is
+    # built once and reused as the cacheable prompt prefix. Only the trailing
+    # {index: SMILES} JSON map varies per batch (appended as a separate block).
+    _STATIC_PROMPT_PREFIX = (
+        "You are an expert physical organic chemist evaluating molecules for the discovery of new tertiary amines that can catalyze the Morita-Baylis-Hillman (MBH) reaction.\n"
+        "Consider the Morita-Baylis-Hillman (MBH) reaction of methyl acrylate (MA) "
+        "with p-nitrobenzaldehyde (pNBA) in methanol.\n\n"
 
-            "### Reaction Context & Mechanism\n"
-            "1. Mechanistic Steps:\n"
-            "   - Step 1: Nucleophilic attack of the tertiary amine on MA to form a zwitterionic enolate.\n"
-            "   - Step 2: Aldol-type C-C bond formation via addition of the enolate to pNBA, forming a zwitterionic alkoxide.\n"
-            "   - Step 3: Solvent-mediated proton transfer and subsequent elimination of the amine catalyst to yield the final MBH adduct.\n\n"
+        "### Reaction Context & Mechanism\n"
+        "1. Mechanistic Steps:\n"
+        "   - Step 1: Nucleophilic attack of the tertiary amine on MA to form a zwitterionic enolate.\n"
+        "   - Step 2: Aldol-type C-C bond formation via addition of the enolate to pNBA, forming a zwitterionic alkoxide.\n"
+        "   - Step 3: Solvent-mediated proton transfer and subsequent elimination of the amine catalyst to yield the final MBH adduct.\n\n"
 
-            "2. Catalyst Requirements (Tertiary Amines):\n"
-            "   - High Nucleophilicity: Essential to efficiently initiate the reaction (Step 1).\n"
-            "   - Low Steric Hindrance: Critical to allow attack and to avoid severe steric clashes in the highly congested C-C bond-forming transition state. Compact or bicyclic amines (e.g., DABCO, quinuclidine derivatives) generally outperform bulky acyclic amines (e.g., triethylamine).\n"
-            "   - Leaving Group Ability: Must readily eliminate in Step 3 to turn over the catalytic cycle.\n\n"
+        "2. Catalyst Requirements (Tertiary Amines):\n"
+        "   - High Nucleophilicity: Essential to efficiently initiate the reaction (Step 1).\n"
+        "   - Low Steric Hindrance: Critical to allow attack and to avoid severe steric clashes in the highly congested C-C bond-forming transition state. Compact or bicyclic amines (e.g., DABCO, quinuclidine derivatives) generally outperform bulky acyclic amines (e.g., triethylamine).\n"
+        "   - Leaving Group Ability: Must readily eliminate in Step 3 to turn over the catalytic cycle.\n\n"
 
-            "3. Solvent Effects & Rate-Determining Step (RDS) in Methanol:\n"
-            "   - Methanol serves as a strong hydrogen-bond donor, significantly stabilizing the highly polar zwitterionic intermediates.\n"
-            "   - Because methanol powerfully facilitates proton transfer (Step 3), the Aldol addition (C-C bond formation in Step 2) becomes the strict Rate-Determining Step (RDS).\n\n"
+        "3. Solvent Effects & Rate-Determining Step (RDS) in Methanol:\n"
+        "   - Methanol serves as a strong hydrogen-bond donor, significantly stabilizing the highly polar zwitterionic intermediates.\n"
+        "   - Because methanol powerfully facilitates proton transfer (Step 3), the Aldol addition (C-C bond formation in Step 2) becomes the strict Rate-Determining Step (RDS).\n\n"
 
-            "### CRITICAL PENALTIES (Apply these ruthlessly):\n"
-            "A. Entropic Penalty: MBH catalysts must be highly rigid and compact molecular bullets to organize the transition state. Heavily penalize floppy molecules or long alkyl chains.\n"
-            "B. Chemical Realism: Penalize structures with bizarre, unstable, or competing functional groups that look like AI hallucinations rather than synthesizable, stable lab chemicals.\n\n"
+        "### CRITICAL PENALTIES (Apply these ruthlessly):\n"
+        "A. Entropic Penalty: MBH catalysts must be highly rigid and compact molecular bullets to organize the transition state. Heavily penalize floppy molecules or long alkyl chains.\n"
+        "B. Chemical Realism: Penalize structures with bizarre, unstable, or competing functional groups that look like AI hallucinations rather than synthesizable, stable lab chemicals.\n\n"
 
-            "### Calibration & Benchmarking:\n"
-            "To ensure consistency, use these benchmarks to set your scoring scale:\n"
-            "- DABCO (1,4-diazabicyclo[2.2.2]octane): 50.0 (The reference catalyst).\n\n"
+        "### Calibration & Benchmarking:\n"
+        "To ensure consistency, use these benchmarks to set your scoring scale:\n"
+        "- DABCO (1,4-diazabicyclo[2.2.2]octane): 50.0 (The reference catalyst).\n\n"
 
-            "### Task\n"
-            "Evaluate the given molecules represented by the following JSON map of index to SMILES:\n"
-            f"{smiles_list_str}\n\n"
+        "### Task\n"
+        "Analyze each given SMILES against the strict requirements for nucleophilicity, sterics, rigidity, and synthetic realism.\n"
+        "Predict its expected catalytic performance (factoring in reaction rate and yield) "
+        "on a continuous scale from 0.0 (completely inactive/poor) to 100.0 (highly active/excellent).\n\n"
 
-            "Analyze each given SMILES against the strict requirements for nucleophilicity, sterics, rigidity, and synthetic realism.\n"
-            "Predict its expected catalytic performance (factoring in reaction rate and yield) "
-            "on a continuous scale from 0.0 (completely inactive/poor) to 100.0 (highly active/excellent).\n\n"
+        "### Output Instructions\n"
+        "Return ONLY a valid JSON object where keys are the indices provided and values are the floating-point scores. "
+        "Do not include markdown formatting (like ```json), reasoning, commentary, or any text outside the JSON object.\n"
+        "Example Schema:\n"
+        "{\n"
+        '  "0": 75.5,\n'
+        '  "1": 15.0\n'
+        "}\n\n"
 
-            "### Output Instructions\n"
-            "Return ONLY a valid JSON object where keys are the indices provided and values are the floating-point scores. "
-            "Do not include markdown formatting (like ```json), reasoning, commentary, or any text outside the JSON object.\n"
-            "Example Schema:\n"
-            "{\n"
-            '  "0": 75.5,\n'
-            '  "1": 15.0\n'
-            "}"
+        "### Molecules to Evaluate\n"
+        "The molecules are given below as a JSON map of index to SMILES:"
+    )
+
+    def _build_variable_suffix(self, smiles_map: dict) -> str:
+        """The per-batch part of the prompt: the {index: SMILES} JSON map."""
+        return "\n" + json.dumps(smiles_map, indent=2)
+
+    def _build_messages(self, smiles_map: dict) -> list:
+        """Build the chat messages, splitting the prompt into a cacheable static
+        prefix and a variable SMILES suffix. When caching is on for an Anthropic
+        model, an explicit `cache_control` breakpoint is placed on the static
+        prefix so the follow-up calls read it from cache instead of re-billing it."""
+        variable_suffix = self._build_variable_suffix(smiles_map)
+
+        cache_eligible = self.use_prompt_caching and (
+            self.is_anthropic or "anthropic" in self.model_name.lower() or "claude" in self.model_name.lower()
         )
+        if cache_eligible:
+            return [{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": self._STATIC_PROMPT_PREFIX,
+                        "cache_control": {"type": "ephemeral"},
+                    },
+                    {"type": "text", "text": variable_suffix},
+                ],
+            }]
 
-    def _make_batch_api_call(self, prompt: str, expected_indices: list) -> dict:
+        # Non-Anthropic providers cache the identical leading prefix automatically;
+        # a single concatenated string keeps that prefix byte-stable across batches.
+        return [{"role": "user", "content": self._STATIC_PROMPT_PREFIX + variable_suffix}]
+
+    def _make_batch_api_call(self, messages: list, expected_indices: list) -> dict:
         """One LLM call; returns {index: clamped_score_0_100}. Errors score 0.0."""
         try:
             # Anthropic's OpenAI-compatible endpoint rejects response_format
             # 'json_object' and requires max_tokens; OpenRouter accepts both.
             kwargs = {
                 "model": self.model_name,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": messages,
             }
             if self.is_anthropic:
                 kwargs["max_tokens"] = self.max_tokens
@@ -214,14 +249,29 @@ class MBHcatalystscore(OracleComponent):
         for start in range(0, len(valid_indices), self.batch_size):
             batch_indices = valid_indices[start:start + self.batch_size]
             smiles_map = {idx: all_smiles[idx] for idx in batch_indices}
-            prompt = self._build_batch_prompt(smiles_map)
+            messages = self._build_messages(smiles_map)
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_calls) as executor:
-                futures = [
-                    executor.submit(self._make_batch_api_call, prompt, batch_indices)
-                    for _ in range(self.num_calls)
-                ]
-                batch_runs = [f.result() for f in futures]
+            if self.use_prompt_caching and self.num_calls > 1:
+                # Prime-then-fan-out: run one replicate first so the provider-side
+                # cache is warm, then fan out the remaining identical calls as
+                # cache hits. (Concurrent calls would all miss the cold cache.)
+                batch_runs = [self._make_batch_api_call(messages, batch_indices)]
+                if self.num_calls > 2:
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_calls - 1) as executor:
+                        futures = [
+                            executor.submit(self._make_batch_api_call, messages, batch_indices)
+                            for _ in range(self.num_calls - 1)
+                        ]
+                        batch_runs.extend(f.result() for f in futures)
+                else:
+                    batch_runs.append(self._make_batch_api_call(messages, batch_indices))
+            else:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_calls) as executor:
+                    futures = [
+                        executor.submit(self._make_batch_api_call, messages, batch_indices)
+                        for _ in range(self.num_calls)
+                    ]
+                    batch_runs = [f.result() for f in futures]
 
             for idx in batch_indices:
                 per_call = [run[idx] for run in batch_runs]

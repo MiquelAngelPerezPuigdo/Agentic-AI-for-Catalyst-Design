@@ -2,6 +2,55 @@ import requests
 import time
 from config import OPENROUTER_API_KEY, GOOGLE_API_KEY
 
+try:
+    from config import USE_PROMPT_CACHING
+except ImportError:
+    USE_PROMPT_CACHING = False
+
+
+def _supports_explicit_cache_control(model):
+    """Anthropic models (via OpenRouter) require explicit `cache_control` breakpoints.
+    Other providers (OpenAI, Grok, DeepSeek, etc.) cache automatically and need no markers."""
+    return "anthropic" in model.lower() or "claude" in model.lower()
+
+
+def _build_cached_messages(model, text_prompt, system_prompt):
+    """Build the OpenRouter `messages` list, adding Anthropic `cache_control` breakpoints
+    on the large static blocks (system prompt and user prefix) when caching is enabled.
+
+    The system and user prompts are byte-identical across the repeated iterations of a
+    benchmark combination, so marking them as ephemeral cache breakpoints lets the 4
+    follow-up calls read the prefill from cache instead of re-paying for it."""
+    use_cache = USE_PROMPT_CACHING and _supports_explicit_cache_control(model)
+
+    messages = []
+    if system_prompt:
+        if use_cache:
+            messages.append({
+                "role": "system",
+                "content": [{
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }],
+            })
+        else:
+            messages.append({"role": "system", "content": system_prompt})
+
+    if use_cache:
+        messages.append({
+            "role": "user",
+            "content": [{
+                "type": "text",
+                "text": text_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }],
+        })
+    else:
+        messages.append({"role": "user", "content": text_prompt})
+
+    return messages
+
 def call_gemini_direct(model, text_prompt, system_prompt=None, temperature=0.2):
     """Directly calls Google Gemini API with retries and fallback."""
     if not GOOGLE_API_KEY or GOOGLE_API_KEY.strip() == "":
@@ -80,11 +129,9 @@ def call_openrouter(model, text_prompt, system_prompt=None, temperature=0.2):
 
     headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
     
-    # 1. Dynamically build the message list based on whether a system prompt exists
-    messages = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
-    messages.append({"role": "user", "content": text_prompt})
+    # 1. Dynamically build the message list (adds Anthropic cache_control breakpoints
+    #    on the large static blocks when prompt caching is enabled).
+    messages = _build_cached_messages(model, text_prompt, system_prompt)
 
     data = {
         "model": model,
