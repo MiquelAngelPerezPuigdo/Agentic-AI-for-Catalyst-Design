@@ -55,6 +55,17 @@ This suite is divided into three distinct benchmarking modules:
 
 ---
 
+## 💰 Prompt Caching (Cost Optimization)
+
+Both benchmarks and the `saturn-mbh` oracle repeatedly send the **same large prompt prefix** (paper context / mechanism block) across iterations. To cut input-token cost, the suite reuses the provider-side prompt cache:
+
+* **Shared-prefix priming:** runners issue one "priming" call per `(model, task, …)` combination to warm the cache, then fan out the remaining identical iterations as cache hits (a cold parallel burst would otherwise all miss the cache).
+* **Anthropic `cache_control`:** Claude models require explicit cache breakpoints, which are added automatically on the large static blocks; OpenAI/Gemini/Grok/DeepSeek cache the leading prefix automatically with no extra markers.
+
+Caching is **on by default**. Toggle it with `USE_PROMPT_CACHING` in [`config.py`](config.py) (for Benchmark 1 & 2), or the `use_prompt_caching` argument of `run_mbh_campaign` (for `saturn-mbh`). Set it to `False` to A/B the cost. Priming adds a small amount of serial latency in exchange for the savings.
+
+---
+
 ## 🪐 Saturn Setup (only for `--mode saturn-mbh`)
 
 The `saturn-mbh` mode is the only part of this suite that needs an external dependency: the [Saturn](https://github.com/MiquelAngelPerezPuigdo/saturn) sample-efficient generative model (this is a fork of [schwallergroup/saturn](https://github.com/schwallergroup/saturn) carrying the MBH oracle registration). Skip this section entirely if you are not running `saturn-mbh`.
