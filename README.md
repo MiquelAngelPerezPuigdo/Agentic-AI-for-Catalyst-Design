@@ -22,6 +22,7 @@ This suite is divided into three distinct benchmarking modules:
 
 * **Conda/Miniconda:** Required to manage the chemistry-specific dependencies (`rdkit`, `scikit-learn`).
 * **OpenRouter API Key:** The suite interfaces with frontier models (e.g., Gemini, Claude, GPT) dynamically via OpenRouter.
+* **Saturn (only for `--mode saturn-mbh`):** The *de novo* MBH catalyst-design campaign drives an external [Saturn](https://github.com/MiquelAngelPerezPuigdo/saturn) generative model. All other modules run without it. See [Saturn setup](#-saturn-setup-only-for---mode-saturn-mbh) below.
 
 ---
 
@@ -48,6 +49,30 @@ This suite is divided into three distinct benchmarking modules:
 
 4. **Prepare Data:**
    Ensure your reference PDF papers are located in a `publications/` directory in the root folder. The benchmark uses PyMuPDF to extract context directly from these files.
+
+---
+
+## 🪐 Saturn Setup (only for `--mode saturn-mbh`)
+
+The `saturn-mbh` mode is the only part of this suite that needs an external dependency: the [Saturn](https://github.com/MiquelAngelPerezPuigdo/saturn) sample-efficient generative model (this is a fork of [schwallergroup/saturn](https://github.com/schwallergroup/saturn) carrying the MBH oracle registration). Skip this section entirely if you are not running `saturn-mbh`.
+
+1. **Clone Saturn** somewhere outside this repository:
+   ```bash
+   git clone https://github.com/MiquelAngelPerezPuigdo/saturn.git ~/saturn
+   ```
+
+2. **Create Saturn's environment** (separate from `ppchem`; see Saturn's own README for troubleshooting):
+   ```bash
+   cd ~/saturn
+   source setup.sh   # creates and configures the 'saturn' conda env
+   ```
+
+3. **Tell this repo where Saturn lives.** The launcher looks for it at, in order: the `--saturn-home` flag, the `SATURN_HOME` environment variable, then `~/saturn` (the default). To use a custom location:
+   ```bash
+   export SATURN_HOME=/path/to/saturn
+   ```
+
+At launch, the bridge copies this project's MBH oracle into the Saturn checkout (as `agentic_mbh_oracle.py`, registered as the component `agentic_mbh_catalyst_score`) and runs Saturn in its own conda env — it never modifies this repository's environment. See the [Saturn-MBH usage section](#4-saturn-mbh-de-novo-mbh-catalyst-design-via-generative-model) for run commands.
 
 ---
 
