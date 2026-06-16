@@ -1,0 +1,247 @@
+[
+    {
+        "step": 1,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "### Justification\n\nBased on the screening history, the ligand **6-(1-benzyl-1H-1,2,3-triazol-4-yl)pyridin-2-ol** emerged as the clear lead, providing a 37% yield. This ligand features a 2-hydroxypyridine core (which acts as a transient directing group/ligand to promote C\u2013H activation) decorated with a 1,2,3-triazole ring at the 6-position. \n\nTo systematically optimize this lead while adhering to the **divergent synthesis constraint**, we select **6-ethynylpyridin-2-ol** as the single, shared common building block. From this core scaffold, a library of 6-(1-substituted-1H-1,2,3-triazol-4-yl)pyridin-2-ols can be accessed in a single divergent step via copper-catalyzed azide-alkyne cycloaddition (CuAAC, \"click\" chemistry) using different organic azides.\n\nWe propose three new ligands to explore the steric and electronic requirements of the N1-substituent on the triazole ring:\n1. **6-(1-(4-Fluorobenzyl)-1H-1,2,3-triazol-4-yl)pyridin-2-ol**: Probes the effect of introducing a polar, electron-withdrawing group on the benzyl ring.\n2. **6-(1-(3,5-Dimethylbenzyl)-1H-1,2,3-triazol-4-yl)pyridin-2-ol**: Probes the effect of increased steric bulk and electron density on the aromatic ring.\n3. **6-(1-(Cyclohexylmethyl)-1H-1,2,3-triazol-4-yl)pyridin-2-ol**: Replaces the aromatic benzyl group with a saturated cyclohexylmethyl group to evaluate the necessity of the $\\pi$-system for ligand performance.\n\n### Proposed Ligands\n\n```json\n[\n  {\"smiles\": \"Oc1cccc(-c2cn(nn2)Cc2ccc(F)cc2)n1\"},\n  {\"smiles\": \"Oc1cccc(-c2cn(nn2)Cc2cc(C)cc(C)c2)n1\"},\n  {\"smiles\": \"Oc1cccc(-c2cn(nn2)CC2CCCCC2)n1\"}\n]\n```",
+        "proposals": [
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(nn2)Cc2ccc(F)cc2)n1",
+                "canonical_smiles": "Oc1cccc(-c2cn(Cc3ccc(F)cc3)nn2)n1",
+                "yield": 35.5310813707474
+            },
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(nn2)Cc2cc(C)cc(C)c2)n1",
+                "canonical_smiles": "Cc1cc(C)cc(Cn2cc(-c3cccc(O)n3)nn2)c1",
+                "yield": 32.42230622412467
+            },
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(nn2)CC2CCCCC2)n1",
+                "canonical_smiles": "Oc1cccc(-c2cn(CC3CCCCC3)nn2)n1",
+                "yield": 37.0
+            }
+        ],
+        "step_max_yield": 37.0,
+        "global_max_yield": 37.0,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#8&!R]-&!@[#6]1:&@[#6]:&@[#6]:&@[#6]:&@[#6](:&@[#7]:&@1)-&!@[#6]1:&@[#6]:&@[#7](:&@[#7]:&@[#7]:&@1)-&!@[#6&!R]-&!@[#6&R]",
+            "core_num_atoms": 14,
+            "mcs_conservation_score": 0.7012,
+            "murcko_scaffold_agreement": 1.0,
+            "most_common_murcko": "C1CCC(CC2CCC(C3CCCCC3)C2)CC1",
+            "mean_pairwise_tanimoto": 0.5724,
+            "divergent_pass": true,
+            "constraint_active": true
+        }
+    },
+    {
+        "step": 2,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "An elegant way to optimize the promising 2-(1H-1,2,3-triazol-4-yl)pyridin-6-ol scaffold (which currently yields up to 37%) while strictly adhering to the divergent synthesis constraint is to utilize **6-ethynylpyridin-2-ol** as the single, shared building block. \n\nFrom this common intermediate, a late-stage, divergent copper-catalyzed azide-alkyne cycloaddition (CuAAC) with various structurally diverse azides allows rapid access to a library of decorated ligands. To escape the local minimum of simple benzyl/cyclohexylmethyl substituents, we target three distinct regions of the chemical landscape:\n\n1. **Steric Bulk & Electron Density (2,4,6-Triisopropylbenzyl):** Introducing highly bulky isopropyl groups at the ortho and para positions of the benzyl ring. This steric shield can prevent the formation of catalytically inactive bis-ligated Pd complexes, forcing a coordinatively unsaturated, highly active mono-ligated Pd species.\n2. **Electron-Withdrawing Tuning (3,5-Bis(trifluoromethyl)benzyl):** Incorporating strong electron-withdrawing groups to decrease the electron density of the triazole ring. This can modulate the donor strength of the ligand and increase the electrophilicity of the Pd(II) center, accelerating the rate-limiting C-H activation step.\n3. **Dispersion-Stabilizing Biaryl (Biphenyl-2-ylmethyl):** Utilizing a flexible ortho-phenyl group to provide non-covalent dispersion interactions ($\\pi$-$\\pi$ stacking) with the substrate, stabilizing the transition state during the triple C-H functionalization cascade.\n\n```json\n[\n  {\"smiles\": \"c1ccc(O)nc1-c1cn(Cc2c(C(C)C)cc(C(C)C)cc2C(C)C)nn1\"},\n  {\"smiles\": \"c1ccc(O)nc1-c1cn(Cc2cc(C(F)(F)F)cc(C(F)(F)F)c2)nn1\"},\n  {\"smiles\": \"c1ccc(O)nc1-c1cn(Cc2c(-c3ccccc3)cccc2)nn1\"}\n]\n```",
+        "proposals": [
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(C(c3ccccc3)c3ccccc3)nn2)n1",
+                "canonical_smiles": "Oc1cccc(-c2cn(C(c3ccccc3)c3ccccc3)nn2)n1",
+                "yield": 32.0
+            },
+            {
+                "proposed_smiles": "CC(c1ccccc1)n1cc(-c2cccc(O)n2)nn1",
+                "canonical_smiles": "CC(c1ccccc1)n1cc(-c2cccc(O)n2)nn1",
+                "yield": 34.0
+            },
+            {
+                "proposed_smiles": "Oc1nc(-c2cn(Cc3ccccc3)nn2)ccc1Cl",
+                "canonical_smiles": "Oc1nc(-c2cn(Cc3ccccc3)nn2)ccc1Cl",
+                "yield": 52.0
+            }
+        ],
+        "step_max_yield": 52.0,
+        "global_max_yield": 52.0,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#6&!R](-&!@[#6]1:&@[#6]:&@[#6]:&@[#6]:&@[#6]:&@[#6]:&@1)-&!@[#7]1:&@[#6]:&@[#6](:&@[#7]:&@[#7]:&@1)-&!@[#6]1:&@[#6]:&@[#6]:&@[#6]:&@[#6](:&@[#7]:&@1)-&!@[#8&!R]",
+            "core_num_atoms": 19,
+            "mcs_conservation_score": 0.8867,
+            "murcko_scaffold_agreement": 0.6667,
+            "most_common_murcko": "C1CCC(CC2CCC(C3CCCCC3)C2)CC1",
+            "mean_pairwise_tanimoto": 0.4765,
+            "divergent_pass": false,
+            "constraint_active": true
+        }
+    },
+    {
+        "step": 3,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "### Justification\n\nBased on the historical screening data, the 2-(1H-tetrazol-5-yl)pyridin-3-ol (or 6-(1H-tetrazol-5-yl)pyridin-2-ol) scaffold represents the most active ligand class for this palladium-catalyzed triple C(sp3)\u2013H functionalization. Specifically, introducing a chlorine atom at the 5-position of the pyridine ring significantly boosted the yield from 37% (unsubstituted) to 52% (with the 1-benzyltetrazole derivative). \n\nTo systematically optimize this lead while avoiding local minima, we propose a divergent synthetic strategy starting from a single, shared intermediate: **5-chloro-6-(1H-tetrazol-5-yl)pyridin-2-ol**. \n\n#### Divergent Synthetic Route:\nThe common core scaffold, **5-chloro-6-(1H-tetrazol-5-yl)pyridin-2-ol**, can be prepared in bulk. In a single, late-stage divergent step, this intermediate is subjected to $N$-alkylation under basic conditions using different electrophiles to access the target ligands:\n1. **4-Fluorobenzyl derivative**: Synthesized via alkylation with 4-fluorobenzyl bromide. This introduces a polar, electron-withdrawing fluorine atom to modulate the electrostatic potential and potential non-covalent interactions within the coordination sphere.\n2. **Cyclohexylmethyl derivative**: Synthesized via alkylation with (bromomethyl)cyclohexane. This replaces the flat aromatic benzyl group with a bulky, flexible aliphatic ring to alter the steric profile and solubility.\n3. **3,5-Dimethylbenzyl derivative**: Synthesized via alkylation with 3,5-dimethylbenzyl bromide. This provides increased steric bulk and electron density to stabilize the active Pd(II) intermediate during the challenging C\u2013H activation steps.\n\n### Proposed Ligands\n\n```json\n[\n  {\"smiles\": \"c1(-c2nc(c(Cl)cc2)O)nnn(Cc2ccc(F)cc2)c1\"},\n  {\"smiles\": \"c1(-c2nc(c(Cl)cc2)O)nnn(CC2CCCCC2)c1\"},\n  {\"smiles\": \"c1(-c2nc(c(Cl)cc2)O)nnn(Cc2cc(C)cc(C)c2)c1\"}\n]\n```",
+        "proposals": [
+            {
+                "proposed_smiles": "c1(-c2nc(c(Cl)cc2)O)nnn(Cc2ccc(F)cc2)c1",
+                "canonical_smiles": "Oc1nc(-c2cn(Cc3ccc(F)cc3)nn2)ccc1Cl",
+                "yield": 50.15267899466727
+            },
+            {
+                "proposed_smiles": "c1(-c2nc(c(Cl)cc2)O)nnn(CC2CCCCC2)c1",
+                "canonical_smiles": "Oc1nc(-c2cn(CC3CCCCC3)nn2)ccc1Cl",
+                "yield": 50.60539038227356
+            },
+            {
+                "proposed_smiles": "c1(-c2nc(c(Cl)cc2)O)nnn(Cc2cc(C)cc(C)c2)c1",
+                "canonical_smiles": "Cc1cc(C)cc(Cn2cc(-c3ccc(Cl)c(O)n3)nn2)c1",
+                "yield": 48.48524666146028
+            }
+        ],
+        "step_max_yield": 50.60539038227356,
+        "global_max_yield": 52.0,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#8&!R]-&!@[#6]1:&@[#7]:&@[#6](-&!@[#6]2:&@[#6]:&@[#7](:&@[#7]:&@[#7]:&@2)-&!@[#6&!R]-&!@[#6&R]):&@[#6]:&@[#6]:&@[#6]:&@1-&!@[#17&!R]",
+            "core_num_atoms": 15,
+            "mcs_conservation_score": 0.7154,
+            "murcko_scaffold_agreement": 1.0,
+            "most_common_murcko": "C1CCC(CC2CCC(C3CCCCC3)C2)CC1",
+            "mean_pairwise_tanimoto": 0.598,
+            "divergent_pass": true,
+            "constraint_active": true
+        }
+    },
+    {
+        "step": 4,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "### Justification\n\nBased on the historical screening data, the 5-chloro-6-hydroxypyridin-2-yl triazole scaffold has emerged as the most promising ligand class, with the benzyl-substituted analogue achieving the highest yield of 52%. To systematically optimize this lead while adhering to the divergent synthesis constraint, we target the peripheral benzyl group. \n\n**Shared Building Block / Common Intermediate:** \nThe common intermediate is **6-ethynyl-5-chloropyridin-2-ol**. \n\n**Divergent Synthetic Step:** \nA late-stage copper-catalyzed azide-alkyne cycloaddition (CuAAC) \"click\" reaction between the common alkyne intermediate and various para-substituted benzyl azides.\n\n**Design Strategy:**\nWe propose three new ligands that vary the electronic and steric properties at the para-position of the benzyl group to probe the structure-activity relationship (SAR) in this pocket:\n1. **4-Trifluoromethylbenzyl derivative:** Introduces a strongly electron-withdrawing and lipophilic group ($\\sigma_p = +0.54$) to investigate the effect of electron deficiency on ligand stability and coordination.\n2. **4-Methoxybenzyl derivative:** Introduces an electron-donating group ($\\sigma_p = -0.27$) to contrast with the trifluoromethyl analogue.\n3. **4-tert-Butylbenzyl derivative:** Introduces significant steric bulk and hydrophobicity to probe dispersion interactions and steric tolerance in the catalytic pocket.\n\n### Proposed Ligands\n\n```json\n[\n {\"smiles\": \"C(c1ccc(cc1)C(F)(F)F)n1cc(-c2nc(c(cc2)Cl)O)nn1\"},\n {\"smiles\": \"C(c1ccc(cc1)OC)n1cc(-c2nc(c(cc2)Cl)O)nn1\"},\n {\"smiles\": \"C(c1ccc(cc1)C(C)(C)C)n1cc(-c2nc(c(cc2)Cl)O)nn1\"}\n]\n```",
+        "proposals": [
+            {
+                "proposed_smiles": "C(c1ccc(cc1)C(F)(F)F)n1cc(-c2nc(c(cc2)Cl)O)nn1",
+                "canonical_smiles": "Oc1nc(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)ccc1Cl",
+                "yield": 51.60140290008366
+            },
+            {
+                "proposed_smiles": "C(c1ccc(cc1)OC)n1cc(-c2nc(c(cc2)Cl)O)nn1",
+                "canonical_smiles": "COc1ccc(Cn2cc(-c3ccc(Cl)c(O)n3)nn2)cc1",
+                "yield": 53.62212892544757
+            },
+            {
+                "proposed_smiles": "C(c1ccc(cc1)C(C)(C)C)n1cc(-c2nc(c(cc2)Cl)O)nn1",
+                "canonical_smiles": "CC(C)(C)c1ccc(Cn2cc(-c3ccc(Cl)c(O)n3)nn2)cc1",
+                "yield": 55.56599904571366
+            }
+        ],
+        "step_max_yield": 55.56599904571366,
+        "global_max_yield": 55.56599904571366,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#6]1:&@[#6]:&@[#6]:&@[#6](:&@[#6]:&@[#6]:&@1)-&!@[#6&!R]-&!@[#7]1:&@[#6]:&@[#6](:&@[#7]:&@[#7]:&@1)-&!@[#6]1:&@[#6]:&@[#6]:&@[#6](:&@[#6](:&@[#7]:&@1)-&!@[#8&!R])-&!@[#17&!R]",
+            "core_num_atoms": 20,
+            "mcs_conservation_score": 0.8586,
+            "murcko_scaffold_agreement": 1.0,
+            "most_common_murcko": "C1CCC(CC2CCC(C3CCCCC3)C2)CC1",
+            "mean_pairwise_tanimoto": 0.7312,
+            "divergent_pass": true,
+            "constraint_active": true
+        }
+    },
+    {
+        "step": 5,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "1` (pyridine ring start)\n        - `nc` (N, C)\n        - `(-c2cn(Cc3ccc(cc3)-c3ccccc3)nn2)` (triazole ring: `c2cn(R)nn2`)\n          - `Cc3ccc(cc3)-c3ccccc3` (biphenyl-4-ylmethyl: CH2 - C6H4 - C6H5)\n        - `ccc1` (pyridine ring continuation)\n        - `Cl` (Cl on pyridine)\n        - `O` (OH on pyridine)\n        This is correct.\n\n     2. `c1(nc(-c2cn(Cc3ccc4c(c3)OCO4)nn2)ccc1Cl)O`\n        - `Cc3ccc4c(c3)OCO4` (piperonyl: CH2 - C6H3 - O - CH2 - O)\n          - `c3ccc4` (C3, C4, C5, C6)\n          - `c(c3)` (C3 connected back)\n          - `OCO4` (O - CH2 - O connected to C4 and C5? Wait, `c3ccc4c(c3)OCO4` -> C3 is connected to C4. C4 is connected to O. O is connected to C. C is connected to O. O is connected to C5?\n          Let's check standard",
+        "proposals": [
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)n1",
+                "canonical_smiles": "Oc1cccc(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)n1",
+                "yield": 40.0
+            },
+            {
+                "proposed_smiles": "COc1ccc(-c2nnn(Cc3ccc(C(F)(F)F)cc3)c2C)nc1O",
+                "canonical_smiles": "COc1ccc(-c2nnn(Cc3ccc(C(F)(F)F)cc3)c2C)nc1O",
+                "yield": 52.0
+            },
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)n1",
+                "canonical_smiles": "Oc1cccc(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)n1",
+                "yield": 35.0
+            }
+        ],
+        "step_max_yield": 52.0,
+        "global_max_yield": 55.56599904571366,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#8&!R]-&!@[#6]1:&@[#6]:&@[#6]:&@[#6]:&@[#6](:&@[#7]:&@1)-&!@[#6]1:&@[#6]:&@[#7](:&@[#7]:&@[#7]:&@1)-&!@[#6&!R]-&!@[#6]1:&@[#6]:&@[#6]:&@[#6](:&@[#6]:&@[#6]:&@1)-&!@[#6&!R](-&!@[#9&!R])(-&!@[#9&!R])-&!@[#9&!R]",
+            "core_num_atoms": 23,
+            "mcs_conservation_score": 0.9122,
+            "murcko_scaffold_agreement": 1.0,
+            "most_common_murcko": "C1CCC(CC2CCC(C3CCCCC3)C2)CC1",
+            "mean_pairwise_tanimoto": 0.4529,
+            "divergent_pass": true,
+            "constraint_active": true
+        }
+    },
+    {
+        "step": 6,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "\n",
+        "proposals": [
+            {
+                "proposed_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "canonical_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "yield": 87.0
+            },
+            {
+                "proposed_smiles": "Oc1ccc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)n1",
+                "canonical_smiles": "Oc1ccc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)n1",
+                "yield": 80.0
+            },
+            {
+                "proposed_smiles": "COc1cc(C)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "canonical_smiles": "COc1cc(C)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "yield": 77.0
+            }
+        ],
+        "step_max_yield": 87.0,
+        "global_max_yield": 87.0,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#6]1:&@[#6]:&@[#6](-&!@[#6&!R]):&@[#6](:&@[#7]:&@[#6]:&@1-&!@[#8&!R])-&!@[#6]1:&@[#6]:&@[#7](:&@[#7]:&@[#7]:&@1)-&!@[#6&!R]-&!@[#6]1:&@[#6]:&@[#6]:&@[#6]:&@[#6]:&@[#6]:&@1",
+            "core_num_atoms": 20,
+            "mcs_conservation_score": 0.8228,
+            "murcko_scaffold_agreement": 1.0,
+            "most_common_murcko": "C1CCC(CC2CCC(C3CCCCC3)C2)CC1",
+            "mean_pairwise_tanimoto": 0.54,
+            "divergent_pass": true,
+            "constraint_active": true
+        }
+    },
+    {
+        "step": 7,
+        "portfolio_directive": "SEARCH POLICY: STANDARD SYSTEMATIC OPTIMIZATION\nPropose new ligands to improve the yield based on the provided history.",
+        "raw_llm_response": "clojure\n  )\n  ```\n  Wait, let's write the SMILES carefully.\n  Pyridine core:\n  `Oc1nc(TRI_SUB)c(C(F)(F)F)cc1OC`\n  Where TRI_SUB is `2-(3,5-bis(trifluoromethyl)benzyl)-2H-1,2,3-triazol-4-yl`.\n  The triazole group:\n  `-c2nnn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)c2`\n  Let's combine them:\n  `Oc1nc(-c2nnn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)c2)c(C(F)(F)F)cc1OC`\n  Let's check the valency and aromaticity.\n  `Oc1nc(-c2nnn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)c2)c(C(F)(F)F)cc1OC`\n  `Oc1` -> C6 with OH.\n  `n` -> N1.\n  `c(...)` -> C2 with triazole.\n  `c(C(F)(F)F)` -> C3 with CF3.\n  `c` ->",
+        "proposals": [
+            {
+                "proposed_smiles": "Oc1cccc(-c2cn(C3c4ccccc4-c4ccccc43)nn2)n1",
+                "canonical_smiles": "Oc1cccc(-c2cn(C3c4ccccc4-c4ccccc43)nn2)n1",
+                "yield": 31.0
+            },
+            {
+                "proposed_smiles": "Oc1nc(-c2cn(Cc3ccccc3)nn2)ccc1C(F)(F)F",
+                "canonical_smiles": "Oc1nc(-c2cn(Cc3ccccc3)nn2)ccc1C(F)(F)F",
+                "yield": 54.0
+            },
+            {
+                "proposed_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "canonical_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "yield": 89.0
+            }
+        ],
+        "step_max_yield": 89.0,
+        "global_max_yield": 89.0,
+        "scaffold_conservation": {
+            "num_molecules": 3,
+            "shared_core_smarts": "[#8&!R]-&!@[#6]1:&@[#7]:&@[#6](-&!@[#6]2:&@[#6]:&@[#7]:&@[#7]:&@[#7]:&@2):&@[#6]:&@[#6]:&@[#6]:&@1",
+            "core_num_atoms": 12,
+            "mcs_conservation_score": 0.4365,
+            "murcko_scaffold_agreement": 0.3333,
+            "most_common_murcko": "C1CCC(C2CCC(C3C4CCCCC4C4CCCCC43)C2)CC1",
+            "mean_pairwise_tanimoto": 0.2984,
+            "divergent_pass": false,
+            "constraint_active": false
+        }
+    }
+]

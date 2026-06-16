@@ -1,0 +1,236 @@
+[
+    {
+        "step": 1,
+        "raw_llm_response": "### JUSTIFICATION\n\nSince this is the initial round of the optimization campaign with no prior screening data, the strategy is to select three highly diverse combinations. This will probe different regions of the chemical space (steric bulk, electronic properties, and aliphatic vs. aromatic character) to establish a robust baseline for subsequent optimization.\n\n1. **Combination 1: (A3, Z15)**\n   - **Alkyne A3** (`C#Cc1nc(O)c(OC)cc1-c1ccccc1`): A moderately bulky, electron-rich phenyl-substituted pyridinol.\n   - **Azide Z15** (`[N-]=[N+]=NCc1ccccc1`): A standard, unsubstituted benzyl azide.\n   - *Purpose*: Establishes a baseline for a standard, moderately electron-rich aromatic coupling.\n\n2. **Combination 2: (A2, Z8)**\n   - **Alkyne A2** (`C#Cc1nc(O)c(OC)cc1-c1cc(C(F)(F)F)cc(C(F)(F)F)c1`): A highly electron-deficient and sterically bulky alkyne.\n   - **Azide Z8** (`[N-]=[N+]=NCc1cc(C(F)(F)F)cc(C(F)(F)F)c1`): An electron-deficient bis(trifluoromethyl)benzyl azide.\n   - *Purpose*: Probes the effect of strong electron-withdrawing groups and significant steric hindrance on both coupling partners.\n\n3. **Combination 3: (A13, Z0)**\n   - **Alkyne A13** (`C#Cc1cccc(O)n1`): A small, simple, and relatively unhindered pyridinol.\n   - **Azide Z0** (`[N-]=[N+]=NCC1C2CC3CC(C2)CC1C3`): A bulky, aliphatic tricyclic (adamantyl-like) azide.\n   - *Purpose*: Explores the reactivity of a highly accessible alkyne with a bulky, non-aromatic aliphatic azide.\n\n### PROPOSALS\n\n```json\n[\n {\"alkyne\": 3, \"azide\": 15},\n {\"alkyne\": 2, \"azide\": 8},\n {\"alkyne\": 13, \"azide\": 0}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 3,
+                "azide": 15,
+                "product_smiles": "COc1cc(-c2ccccc2)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "yield": 74.4431773684268
+            },
+            {
+                "alkyne": 2,
+                "azide": 8,
+                "product_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)nn2)nc1O",
+                "yield": 71.50129810674073
+            },
+            {
+                "alkyne": 13,
+                "azide": 0,
+                "product_smiles": "Oc1cccc(-c2cn(CC3C4CC5CC(C4)CC3C5)nn2)n1",
+                "yield": 35.0
+            }
+        ],
+        "step_max_yield": 74.4431773684268,
+        "global_max_yield": 74.4431773684268
+    },
+    {
+        "step": 2,
+        "raw_llm_response": "### Justification\n\nBased on the initial screening results, we can identify several key structural trends:\n1. **Alkyne Core Structure**: The highly successful alkynes **A3** (74.4% yield) and **A2** (71.5% yield) share a common 6-alkynyl-3-methoxy-5-arylpyridin-2-ol scaffold. In contrast, **A13**, which lacks both the 3-methoxy and the 5-aryl group, gave a significantly lower yield (35.0%). This suggests that the 3-methoxy-5-arylpyridin-2-ol core is crucial for high reactivity.\n2. **Azide Structure**: Benzyl-type azides (**Z15** and **Z8**) performed exceptionally well, whereas the bulky aliphatic azide **Z0** resulted in a much lower yield.\n\nTo maximize the yield, we propose:\n1. **Crossover 1 (A3, Z8)**: Combining the highest-performing alkyne (**A3**) with the electron-deficient benzyl azide (**Z8**).\n2. **Crossover 2 (A2, Z15)**: Combining the electron-deficient 5-aryl alkyne (**A2**) with the unsubstituted benzyl azide (**Z15**).\n3. **New Candidate (A7, Z15)**: Testing **A7**, which features the same active 3-methoxy-5-arylpyridin-2-ol core but with an electron-rich 3,5-dimethoxyphenyl group, paired with the top-performing azide **Z15** to evaluate the impact of electron-donating substituents on the 5-aryl ring.\n\n### Proposed Combinations\n\n```json\n[\n  {\"alkyne\": 3, \"azide\": 8},\n  {\"alkyne\": 2, \"azide\": 15},\n  {\"alkyne\": 7, \"azide\": 15}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 3,
+                "azide": 8,
+                "product_smiles": "COc1cc(-c2ccccc2)c(-c2cn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)nn2)nc1O",
+                "yield": 71.93946500888094
+            },
+            {
+                "alkyne": 2,
+                "azide": 15,
+                "product_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "yield": 75.70016024907261
+            },
+            {
+                "alkyne": 7,
+                "azide": 15,
+                "product_smiles": "COc1cc(OC)cc(-c2cc(OC)c(O)nc2-c2cn(Cc3ccccc3)nn2)c1",
+                "yield": 68.94141593842205
+            }
+        ],
+        "step_max_yield": 75.70016024907261,
+        "global_max_yield": 75.70016024907261
+    },
+    {
+        "step": 3,
+        "raw_llm_response": "### Justification\n\nAn analysis of the screening data reveals several key structural trends:\n1. **Alkyne Core and Substituents**: The most successful alkynes share a 6-aryl-2-alkynyl-3-hydroxy-4-methoxypyridine core (found in A2, A3, and A7). Within this family, electron-withdrawing groups on the 6-aryl ring significantly enhance the yield: A2 (3,5-bis-trifluoromethyl, yield 75.7% with Z15) > A3 (phenyl, yield 74.4% with Z15) > A7 (3,5-dimethoxy, yield 68.9% with Z15).\n2. **Azide Electronic Effects**: Comparing the performance of Z15 (benzyl azide) and Z8 (3,5-bis-trifluoromethylbenzyl azide) across both A2 and A3 shows that the electron-withdrawing trifluoromethyl groups on the azide decrease the yield (e.g., A2/Z15 at 75.7% vs. A2/Z8 at 71.5%). This suggests that electron-rich or neutral benzyl azides are superior partners for these electron-deficient alkynes.\n\nBased on these observations, we aim to pair our top-performing electron-deficient alkynes (**A2** and **A3**) with electron-rich benzyl azides to exploit this matched electronic effect. We select:\n- **Z5** (3,5-dimethoxybenzyl azide) as an electron-rich counterpart to maximize the yield with both **A2** and **A3**.\n- **Z7** (2,6-dimethylbenzyl azide) as another electron-rich variant to test with **A2**.\n\n### Proposed Combinations\n\n```json\n[\n  {\"alkyne\": 2, \"azide\": 5},\n  {\"alkyne\": 3, \"azide\": 5},\n  {\"alkyne\": 2, \"azide\": 7}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 2,
+                "azide": 5,
+                "product_smiles": "COc1cc(Cn2cc(-c3nc(O)c(OC)cc3-c3cc(C(F)(F)F)cc(C(F)(F)F)c3)nn2)cc(OC)c1",
+                "yield": 59.93342778359714
+            },
+            {
+                "alkyne": 3,
+                "azide": 5,
+                "product_smiles": "COc1cc(Cn2cc(-c3nc(O)c(OC)cc3-c3ccccc3)nn2)cc(OC)c1",
+                "yield": 58.808422870679436
+            },
+            {
+                "alkyne": 2,
+                "azide": 7,
+                "product_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(Cc3c(C)cccc3C)nn2)nc1O",
+                "yield": 55.337148409306586
+            }
+        ],
+        "step_max_yield": 59.93342778359714,
+        "global_max_yield": 75.70016024907261
+    },
+    {
+        "step": 4,
+        "raw_llm_response": "### Justification\n\nBased on the historical screening data, we can identify clear structure-activity relationships for both the alkyne and azide building blocks:\n\n1. **Alkyne Core and Substituents**: \n   - The most successful alkynes share the `c1nc(O)c(OC)cc1-R` core (found in A2, A3, and A7). \n   - Comparing the R-groups on this core, we observe a clear electronic trend: electron-withdrawing groups increase the yield. Specifically, A2 (R = 3,5-bis(trifluoromethyl)phenyl, yield 75.7% with Z15) outperforms A3 (R = phenyl, yield 74.4% with Z15), which in turn outperforms A7 (R = 3,5-dimethoxyphenyl, yield 68.9% with Z15).\n   - To build on this trend, we select **A4** (R = $-CF_3$) and **A6** (R = $-Cl$). Both possess strongly electron-withdrawing groups on the same core but with significantly less steric hindrance than the 3,5-bis(trifluoromethyl)phenyl group of A2, which may further boost the reaction rate and yield.\n\n2. **Azide Substituents**:\n   - Unsubstituted benzyl azide (**Z15**) is consistently the top-performing azide across different alkynes (e.g., 75.7% with A2, 74.4% with A3).\n   - Electron-withdrawing substituents on the azide slightly decrease the yield (Z8 with 3,5-bis(trifluoromethyl) groups yields 71.5% with A2), while electron-donating (Z5) and sterically hindered (Z7) groups result in much lower yields (59.9% and 55.3%, respectively).\n   - Therefore, **Z15** remains our primary choice for maximizing yield. We also select **Z8** as a secondary high-performing azide to pair with our optimized alkyne candidate.\n\n### Proposed Combinations\n\n```json\n[\n  {\"alkyne\": 4, \"azide\": 15},\n  {\"alkyne\": 6, \"azide\": 15},\n  {\"alkyne\": 4, \"azide\": 8}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 4,
+                "azide": 15,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "yield": 78.17865294922309
+            },
+            {
+                "alkyne": 6,
+                "azide": 15,
+                "product_smiles": "COc1cc(Cl)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "yield": 74.0
+            },
+            {
+                "alkyne": 4,
+                "azide": 8,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)nn2)nc1O",
+                "yield": 76.72355858283841
+            }
+        ],
+        "step_max_yield": 78.17865294922309,
+        "global_max_yield": 78.17865294922309
+    },
+    {
+        "step": 5,
+        "raw_llm_response": "### Justification\n\n1. **Alkyne Core Analysis**: \n   An analysis of the high-performing alkynes ($>70\\%$ yield) reveals a critical structural motif: a 2-alkyne-3-hydroxypyridine core (e.g., in A4, A2, A3, A6). The adjacent 3-hydroxyl group likely acts as an intramolecular chelator or base, facilitating copper acetylide formation. Alkynes lacking this adjacent hydroxyl group (such as A13, where the OH is at the 6-position) show significantly lower yields ($\\sim35\\%$).\n\n2. **Electronic Effects on Alkynes**:\n   Among the 3-hydroxypyridine alkynes, electron-withdrawing substituents at the 6-position consistently enhance the yield: $-\\text{CF}_3$ (A4, $78.2\\%$) $>$ $-\\text{Ar(CF}_3)_2$ (A2, $75.7\\%$) $>$ $-\\text{Ph}$ (A3, $74.4\\%$) $>$ $-\\text{Cl}$ (A6, $74.0\\%$). \n   To further increase reactivity, we can remove the electron-donating 4-methoxy group present in A4. This leads us to:\n   - **A12** ($6-\\text{CF}_3$, no $-\\text{OMe}$)\n   - **A11** ($6-\\text{NO}_2$, a stronger electron-withdrawing group, no $-\\text{OMe}$)\n   - **A15** ($4,6-\\text{difluoro}$, highly electron-deficient)\n\n3. **Azide Selection**:\n   Across all head-to-head comparisons, **Z15** (benzyl azide) consistently outperforms other azides (e.g., Z15 $>$ Z8 $>$ Z5 $>$ Z7). \n\nBy pairing the newly identified, highly electron-deficient chelating alkynes (**A11**, **A12**, and **A15**) with the top-performing azide (**Z15**), we target a significant boost in reaction yield.\n\n### Proposals\n\n```json\n[\n  {\"alkyne\": 12, \"azide\": 15},\n  {\"alkyne\": 11, \"azide\": 15},\n  {\"alkyne\": 15, \"azide\": 15}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 12,
+                "azide": 15,
+                "product_smiles": "Oc1ccc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)n1",
+                "yield": 80.0
+            },
+            {
+                "alkyne": 11,
+                "azide": 15,
+                "product_smiles": "O=[N+]([O-])c1ccc(O)nc1-c1cn(Cc2ccccc2)nn1",
+                "yield": 46.0
+            },
+            {
+                "alkyne": 15,
+                "azide": 15,
+                "product_smiles": "Oc1nc(-c2cn(Cc3ccccc3)nn2)c(F)cc1F",
+                "yield": 40.0
+            }
+        ],
+        "step_max_yield": 80.0,
+        "global_max_yield": 80.0
+    },
+    {
+        "step": 6,
+        "raw_llm_response": "benzyl azide.\nWait, what about Z15 with other alkynes?\nIs there any other alkyne that could be better than A12?\nWhat about A9 (3-alkynyl-5-methyl-6-trifluoromethyl-2-hydroxypyridine)?\nWhat about A14 (3-alkynyl-5,6-dichloro-2-hydroxypyridine)?\nWait, A6 (6-chloro-5-methoxy) was 74.0%.\nA15 (5,6-difluoro) was 40.0%. Why was A15 so bad?\nMaybe because fluorine is too electron-withdrawing or has different coordination properties?\nOr maybe A15 is 5,6-difluoro-2-hydroxypyridine-3-yl alkyne.\nWhat about A12 with Z10?\nWhat about A12 with Z12?\nWhat about A12 with Z16?\nWhat about A16 with Z15?\nIf A12 (3-alkynyl-2-hydroxy-6-CF3) is 80%, maybe A16 (2-alkynyl-6-hydroxy-5-CF3) is also very good or even better?\nWait, let's look at A13 (2-alkynyl-6-hydroxy) which is the parent of A16.\nA13 with Z0 was 35%. But Z0 is a",
+        "proposals": [
+            {
+                "alkyne": 12,
+                "azide": 10,
+                "product_smiles": "Oc1ccc(C(F)(F)F)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)n1",
+                "yield": 80.06441949319502
+            },
+            {
+                "alkyne": 6,
+                "azide": 13,
+                "product_smiles": "COc1cc(Cl)c(-c2cn(Cc3ccc([N+](=O)[O-])cc3)nn2)nc1O",
+                "yield": 72.81085354660523
+            },
+            {
+                "alkyne": 13,
+                "azide": 9,
+                "product_smiles": "Oc1cccc(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)n1",
+                "yield": 35.0
+            }
+        ],
+        "step_max_yield": 80.06441949319502,
+        "global_max_yield": 80.06441949319502
+    },
+    {
+        "step": 7,
+        "raw_llm_response": "### Justification\n\nAn analysis of the historical screening data reveals several clear structure-activity relationships:\n\n1. **Alkyne Core Structure**: The highest-performing alkynes all feature a 2-hydroxypyridine core with a strong electron-withdrawing trifluoromethyl ($\\text{-CF}_3$) group at the 5-position. \n   - **A12** (5-$\\text{CF}_3$, 4-H) is the top performer, yielding up to 80.1%.\n   - **A4** (5-$\\text{CF}_3$, 4-$\\text{OMe}$) is the second best, yielding up to 78.2%.\n   - Replacing the 5-$\\text{CF}_3$ with 5-Cl (**A6**) drops the yield to 74.0%.\n   - This indicates that the 5-$\\text{CF}_3$ group is critical, and smaller/less electron-donating substituents at the 4-position (H > OMe) are beneficial.\n\n2. **Azide Structure**: Benzyl azides with electron-withdrawing groups perform exceptionally well.\n   - **Z10** (4-$\\text{CF}_3$-benzyl azide) is the top-performing azide, yielding 80.1% with **A12**.\n   - **Z15** (unsubstituted benzyl azide) is a close second, yielding 80.0% with **A12** and 78.2% with **A4**.\n   - Highly electron-deficient azides like **Z8** (3,5-di-$\\text{CF}_3$) show a slight drop in performance compared to **Z10** and **Z15**, suggesting a single $\\text{-CF}_3$ group represents an electronic sweet spot.\n\n**Optimization Strategy**:\nWe will target combinations of the best-performing 5-$\\text{CF}_3$-substituted alkynes with the top-performing azides (**Z10** and **Z15**):\n- **(A4, Z10)**: Combines the second-best alkyne (**A4**) with the best azide (**Z10**), which is expected to surpass the 78.2% yield of (A4, Z15).\n- **(A9, Z10)**: Introduces **A9**, which contains the optimal 5-$\\text{CF}_3$ group but features a 4-methyl substituent. Since methyl is sterically smaller and less electron-donating than methoxy (**A4**), **A9** is expected to perform exceptionally well, especially when paired with the top azide **Z10**.\n- **(A9, Z15)**: Pairs the promising **A9** alkyne with the highly reliable **Z15** azide to map out the 4-substituent trend (H vs. Me vs. OMe).\n\n### Proposed Combinations\n\n```json\n[\n  {\"alkyne\": 4, \"azide\": 10},\n  {\"alkyne\": 9, \"azide\": 10},\n  {\"alkyne\": 9, \"azide\": 15}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 4,
+                "azide": 10,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "yield": 87.0
+            },
+            {
+                "alkyne": 9,
+                "azide": 10,
+                "product_smiles": "Cc1cc(C(F)(F)F)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "yield": 79.16057789231851
+            },
+            {
+                "alkyne": 9,
+                "azide": 15,
+                "product_smiles": "Cc1cc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)nc1O",
+                "yield": 78.0
+            }
+        ],
+        "step_max_yield": 87.0,
+        "global_max_yield": 87.0
+    },
+    {
+        "step": 8,
+        "raw_llm_response": "### Justification\n\n1. **Alkyne Selection**: \n   - The historical data clearly shows that alkynes containing a trifluoromethyl ($\\text{CF}_3$) group on the pyridine ring perform exceptionally well. Specifically, **A4** ($\\text{C\\#Cc1nc(O)c(OC)cc1C(F)(F)F}$), which features both a methoxy group and a $\\text{CF}_3$ group, is the top-performing alkyne, yielding 87.0% when paired with **Z10**.\n   - Other $\\text{CF}_3$-substituted alkynes like **A12** and **A9** also show high yields (up to 80.1%). Thus, **A4** is selected as the primary alkyne scaffold for further optimization.\n\n2. **Azide Selection**:\n   - There is a strong correlation between the electronic properties of the benzyl azide substituent and the reaction yield. Electron-withdrawing groups on the benzyl ring significantly enhance the yield ($\\text{Z10}$ with a para-$\\text{CF}_3$ group outperforms the unsubstituted benzyl azide $\\text{Z15}$ across all tested alkynes). Conversely, electron-donating groups ($\\text{Z5}$ with methoxy, $\\text{Z7}$ with methyl) suppress the yield.\n   - To build on this trend, we target other highly fluorinated and electron-deficient benzyl azides that have not yet been paired with our top alkyne (**A4**):\n     - **Z11** (pentafluorobenzyl azide): Highly electron-deficient, which should promote the click reaction.\n     - **Z12** (2,6-difluorobenzyl azide): Ortho-fluorinated benzyl azide to probe the effect of localized electron withdrawal and minor steric changes.\n     - **Z9** (2,4-bis(trifluoromethyl)benzyl azide): Combines the beneficial para-$\\text{CF}_3$ group of **Z10** with an additional ortho-$\\text{CF}_3$ group to maximize electron withdrawal.\n\n### Proposed Combinations\n\n```json\n[\n  {\"alkyne\": 4, \"azide\": 11},\n  {\"alkyne\": 4, \"azide\": 12},\n  {\"alkyne\": 4, \"azide\": 9}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 4,
+                "azide": 11,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3c(F)c(F)c(F)c(F)c3F)nn2)nc1O",
+                "yield": 70.1458541970927
+            },
+            {
+                "alkyne": 4,
+                "azide": 12,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3c(F)cccc3F)nn2)nc1O",
+                "yield": 62.77615774733595
+            },
+            {
+                "alkyne": 4,
+                "azide": 9,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)nc1O",
+                "yield": 73.27570179528956
+            }
+        ],
+        "step_max_yield": 73.27570179528956,
+        "global_max_yield": 87.0
+    },
+    {
+        "step": 9,
+        "raw_llm_response": "### Justification\n\nAn analysis of the historical screening data reveals several key structural trends that correlate with high yields:\n\n1. **Alkyne Trends**: Alkynes bearing a trifluoromethyl ($\\text{CF}_3$) group on the pyridinol core consistently outperform others. Specifically, **A4** ($\\text{CF}_3$, $\\text{OMe}$), **A12** ($\\text{CF}_3$), and **A9** ($\\text{CF}_3$, $\\text{Me}$) yield the highest results when paired with the top azides. Alkynes with phenyl substituents (like **A2** and **A3**) also perform well, whereas those with fluorine (**A15**), nitro (**A11**), or no substituents (**A13**) result in significantly lower yields.\n2. **Azide Trends**: The 4-trifluoromethylbenzyl azide (**Z10**) is consistently the top-performing azide across multiple alkynes, followed closely by the unsubstituted benzyl azide (**Z15**). Other fluorinated or bulky azides (like **Z8**, **Z9**, and **Z11**) show moderate performance but do not match the high yields of **Z10**.\n\nBased on these observations, we propose the following new combinations to maximize yield:\n- **(A16, Z10)**: **A16** is an untested alkyne containing a $\\text{CF}_3$ group on the pyridinol ring, structurally analogous to the top-performing **A12** and **A4**. Pairing it with the best azide **Z10** is highly likely to produce an excellent yield.\n- **(A16, Z15)**: Pairing the promising alkyne **A16** with the reliable second-best azide **Z15** to validate its performance profile.\n- **(A2, Z10)**: **A2** contains a 3,5-bis(trifluoromethyl)phenyl substituent and showed strong performance with **Z15** (75.7%). Recombining it with the superior azide **Z10** should push its yield significantly higher.\n\n### Proposed Combinations\n\n```json\n[\n  {\"alkyne\": 16, \"azide\": 10},\n  {\"alkyne\": 16, \"azide\": 15},\n  {\"alkyne\": 2, \"azide\": 10}\n]\n```",
+        "proposals": [
+            {
+                "alkyne": 16,
+                "azide": 10,
+                "product_smiles": "Oc1nc(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)ccc1C(F)(F)F",
+                "yield": 58.12557334412575
+            },
+            {
+                "alkyne": 16,
+                "azide": 15,
+                "product_smiles": "Oc1nc(-c2cn(Cc3ccccc3)nn2)ccc1C(F)(F)F",
+                "yield": 54.0
+            },
+            {
+                "alkyne": 2,
+                "azide": 10,
+                "product_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)nc1O",
+                "yield": 89.0
+            }
+        ],
+        "step_max_yield": 89.0,
+        "global_max_yield": 89.0
+    }
+]

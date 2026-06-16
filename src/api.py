@@ -4,8 +4,8 @@ from config import OPENROUTER_API_KEY, GOOGLE_API_KEY
 
 def call_gemini_direct(model, text_prompt, system_prompt=None, temperature=0.2):
     """Directly calls Google Gemini API with retries and fallback."""
-    if not GOOGLE_API_KEY:
-        return "ERROR: GOOGLE_API_KEY not found in environment."
+    if not GOOGLE_API_KEY or GOOGLE_API_KEY.strip() == "":
+        raise ValueError("CRITICAL ERROR: GOOGLE_API_KEY is not set or empty, but Gemini model was requested. Stopping campaign!")
     
     model_name = model.split("/")[-1] # strip google/ or other provider prefix
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GOOGLE_API_KEY}"
@@ -70,7 +70,9 @@ def call_gemini_direct(model, text_prompt, system_prompt=None, temperature=0.2):
 
 def call_openrouter(model, text_prompt, system_prompt=None, temperature=0.2):
     """Handles API calls to OpenRouter, or routes to Gemini directly if GOOGLE_API_KEY is available."""
-    if GOOGLE_API_KEY and "gemini" in model.lower():
+    if "gemini" in model.lower():
+        if not GOOGLE_API_KEY or GOOGLE_API_KEY.strip() == "":
+            raise ValueError(f"CRITICAL ERROR: GOOGLE_API_KEY is not set or empty, but Gemini model {model} was requested. Stopping campaign!")
         return call_gemini_direct(model, text_prompt, system_prompt, temperature)
         
     if not OPENROUTER_API_KEY:

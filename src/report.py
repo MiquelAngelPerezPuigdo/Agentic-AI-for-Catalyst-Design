@@ -3,9 +3,12 @@ import seaborn as sns
 import pandas as pd
 from config import ALL_MODELS, FRONTIER_MODELS
 import numpy as np
+from src.paths import out_path
 
-def generate_assessment_report(df, filename="output/assessment_highlights.md"):
+def generate_assessment_report(df, filename=None):
     """Generates a Markdown file outlining the best, worst, and all comments per reaction."""
+    if filename is None:
+        filename = out_path("benchmark1", "assessment_highlights.md")
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("# LLM Chemistry Benchmark: Judge Assessments\n\n")
         
@@ -59,7 +62,7 @@ def plot_fair_results(csv_path="output/fair_chemistry_results.csv"):
         plt.legend(h[:2], l[:2], title="Condition", loc='lower left')
         
         plt.tight_layout()
-        plt.savefig(f"output/fair_plot_{rxn}.png")
+        plt.savefig(out_path("benchmark1", f"fair_plot_{rxn}.png"))
 
 # --- ADDED FOR BENCHMARK 2: LIGAND RANKING PLOTS ---
 from src.prompts import ALL_LEVEL_KEYS
@@ -108,7 +111,7 @@ def plot_level_hierarchy(csv_path="output/benchmark2_results.csv"):
         plt.tight_layout()
         
         # Save output
-        plt.savefig(f"output/benchmark2_trend_{task}.png", dpi=300, bbox_inches='tight')
+        plt.savefig(out_path("benchmark2", f"benchmark2_trend_{task}.png"), dpi=300, bbox_inches='tight')
         plt.close()
         
     print(f"[+] Benchmark 2 plots successfully saved to the output/ directory.")
@@ -128,9 +131,8 @@ def plot_prospective_convergence(results_dict, output_path="output/generative_be
         mean_yield = np.mean(arr, axis=0)
         std_yield = np.std(arr, axis=0)
         
-        c = colors.get(model, fallback_colors[color_idx % len(fallback_colors)])
-        color_idx += 1
-        model_label = model.split('/')[-1]
+        min_yield = np.min(arr, axis=0)
+        max_yield = np.max(arr, axis=0)
         
         plt.plot(steps, mean_yield, color=c, linestyle="-", marker="o", linewidth=2.5, label=model_label)
         plt.fill_between(steps, mean_yield - std_yield, mean_yield + std_yield, color=c, alpha=0.2)
@@ -143,7 +145,16 @@ def plot_prospective_convergence(results_dict, output_path="output/generative_be
     plt.xlabel("Active Learning Optimization Step", fontsize=12)
     plt.ylabel("Maximum Discovered Yield (%)", fontsize=12)
     plt.xticks(steps)
-    plt.ylim(-5, 105)
+    
+    global_min = 100.0
+    for model, runs in results_dict.items():
+        if runs and len(runs) > 0:
+            global_min = min(global_min, np.min(runs))
+    if global_min < 100.0:
+        plt.ylim(global_min, 90)
+    else:
+        plt.ylim(30, 90)
+        
     plt.grid(True, linestyle=":", alpha=0.6)
     plt.legend(loc="lower right", fontsize=11)
     plt.tight_layout()

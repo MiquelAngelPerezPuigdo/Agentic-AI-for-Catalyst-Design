@@ -1,0 +1,48 @@
+{
+  "thresholds": {
+    "murcko_min": 1.0,
+    "mcs_min": 0.5,
+    "tanimoto_min": 0.4,
+    "campaign_pass_rate_min": 0.8
+  },
+  "overall_metrics": {
+    "mcs_conservation_score": 0.8471265306122449,
+    "murcko_scaffold_agreement": 0.9795938775510205,
+    "mean_pairwise_tanimoto": 0.6521040816326531
+  },
+  "overall_pass_rate": 0.9387755102040817,
+  "divergence_enforced": true,
+  "per_campaign": {
+    "1": {
+      "mcs_conservation_score": 0.8292363636363637,
+      "murcko_scaffold_agreement": 1.0,
+      "mean_pairwise_tanimoto": 0.6442727272727272,
+      "pass_rate": 1.0
+    },
+    "2": {
+      "mcs_conservation_score": 0.8729071428571429,
+      "murcko_scaffold_agreement": 0.9761928571428572,
+      "mean_pairwise_tanimoto": 0.6588642857142857,
+      "pass_rate": 0.9285714285714286
+    },
+    "3": {
+      "mcs_conservation_score": 0.8641071428571429,
+      "murcko_scaffold_agreement": 0.9761928571428572,
+      "mean_pairwise_tanimoto": 0.6808,
+      "pass_rate": 0.9285714285714286
+    },
+    "4": {
+      "mcs_conservation_score": 0.81615,
+      "murcko_scaffold_agreement": 0.9444499999999999,
+      "mean_pairwise_tanimoto": 0.5618333333333333,
+      "pass_rate": 0.8333333333333334
+    },
+    "5": {
+      "mcs_conservation_score": 0.793125,
+      "murcko_scaffold_agreement": 1.0,
+      "mean_pairwise_tanimoto": 0.68495,
+      "pass_rate": 1.0
+    }
+  },
+  "num_steps": 49
+}
