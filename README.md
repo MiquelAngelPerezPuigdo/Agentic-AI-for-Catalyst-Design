@@ -228,6 +228,31 @@ All benchmarks automatically output data into the `output/` directory:
 
 ---
 
+## 🙏 Acknowledgments & Citation
+
+I am grateful to **Sarina Kopf** and **Prof. Philippe Schwaller** for their supervision, guidance, and for the opportunity to carry out this work.
+
+The `saturn-mbh` *de novo* design loop is powered by **Saturn**, the sample-efficient generative molecular design model by **Jeff Guo, Junwu Chen, Anthony GX-Chen, and Philippe Schwaller**. The generator itself is entirely their work — this repository only contributes the MBH-specific LLM oracle and the bridge that drives Saturn. Huge thanks to Jeff for building and open-sourcing such a capable molecule generator.
+
+* **Saturn:** <https://github.com/schwallergroup/saturn>
+* **Publication:** Guo, J.; Chen, J.; GX-Chen, A.; Schwaller, P. *Sample-efficient generative molecular design using memory manipulation.* **Nature Machine Intelligence** **2026**, *8* (3), 449–460.
+
+If you use the `saturn-mbh` mode, please cite Saturn:
+
+```bibtex
+@article{Guo2026,
+  author  = {Guo, Jeff and Chen, Junwu and GX-Chen, Anthony and Schwaller, Philippe},
+  title   = {Sample-efficient generative molecular design using memory manipulation},
+  journal = {Nature Machine Intelligence},
+  year    = {2026},
+  volume  = {8},
+  number  = {3},
+  pages   = {449--460}
+}
+```
+
+---
+
 ## ⚖️ License
 
 MIT License
