@@ -38,6 +38,23 @@ MAX_MOL_WT = 250.0       # DABCO is 112 Da; cap forces compact scaffolds.
 MAX_ROTATABLE_BONDS = 3  # MBH transition state punishes floppy chains.
 
 
+def _extract_json(content: str) -> str:
+    """Pull the JSON object out of an LLM reply, tolerating markdown fences or
+    surrounding prose (Anthropic without forced JSON mode may add either)."""
+    if content is None:
+        return "{}"
+    text = content.strip()
+    if text.startswith("```"):
+        # Drop the opening fence (``` or ```json) and the trailing fence.
+        text = text.split("```", 2)[1] if text.count("```") >= 2 else text.strip("`")
+        if text.lstrip().lower().startswith("json"):
+            text = text.lstrip()[4:]
+    start, end = text.find("{"), text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return text[start:end + 1]
+    return text.strip()
+
+
 def is_valid_mbh_catalyst(mol) -> bool:
     """Hard physical/structural filters that a candidate must pass before scoring."""
     if mol is None:
@@ -68,21 +85,37 @@ class MBHcatalystscore(OracleComponent):
         super().__init__(parameters)
 
         sp = self.parameters.specific_parameters
-        self.api_key = sp.get("api_key") or os.getenv("OPENROUTER_API_KEY")
+        self.api_key = (
+            sp.get("api_key")
+            or os.getenv("ANTHROPIC_API_KEY")
+            or os.getenv("OPENROUTER_API_KEY")
+        )
         if not self.api_key:
             raise ValueError(
-                "MBH oracle needs an OpenRouter key: set 'api_key' in specific_parameters "
-                "or export OPENROUTER_API_KEY."
+                "MBH oracle needs an API key: set 'api_key' in specific_parameters "
+                "or export ANTHROPIC_API_KEY / OPENROUTER_API_KEY."
             )
+
+        # Pick the backend from the key shape: Anthropic keys ('sk-ant-...') hit
+        # Anthropic's OpenAI-compatible endpoint directly; everything else goes
+        # through OpenRouter to match this repository's config.py.
+        self.is_anthropic = self.api_key.startswith("sk-ant-")
+        base_url = (
+            "https://api.anthropic.com/v1/"
+            if self.is_anthropic
+            else "https://openrouter.ai/api/v1"
+        )
 
         # Import lazily so the module is importable even where openai isn't installed.
         from openai import OpenAI
-        self.client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=self.api_key)
+        self.client = OpenAI(base_url=base_url, api_key=self.api_key)
 
-        self.model_name = sp.get("model_name", "google/gemini-3.5-flash")
+        default_model = "claude-opus-4-8" if self.is_anthropic else "google/gemini-3.5-flash"
+        self.model_name = sp.get("model_name", default_model)
         self.num_calls = int(sp.get("num_calls", 3))
         self.batch_size = int(sp.get("batch_size", 16))
         self.rate_limit_delay = float(sp.get("rate_limit_delay", 1.0))
+        self.max_tokens = int(sp.get("max_tokens", 4096))
 
     def _build_batch_prompt(self, smiles_map: dict) -> str:
         """Heavily contextualized MBH-mechanism prompt over a JSON map of {index: SMILES}."""
@@ -136,12 +169,19 @@ class MBHcatalystscore(OracleComponent):
     def _make_batch_api_call(self, prompt: str, expected_indices: list) -> dict:
         """One LLM call; returns {index: clamped_score_0_100}. Errors score 0.0."""
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-            )
-            raw_scores = json.loads(response.choices[0].message.content)
+            # Anthropic's OpenAI-compatible endpoint rejects response_format
+            # 'json_object' and requires max_tokens; OpenRouter accepts both.
+            kwargs = {
+                "model": self.model_name,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if self.is_anthropic:
+                kwargs["max_tokens"] = self.max_tokens
+            else:
+                kwargs["response_format"] = {"type": "json_object"}
+
+            response = self.client.chat.completions.create(**kwargs)
+            raw_scores = json.loads(_extract_json(response.choices[0].message.content))
         except Exception as e:  # noqa: BLE001 - never let an API hiccup kill a campaign
             print(f"[MBH oracle] Batch API error: {e}")
             return {int(idx): 0.0 for idx in expected_indices}
@@ -155,7 +195,11 @@ class MBHcatalystscore(OracleComponent):
         return cleaned
 
     def __call__(self, mols: list) -> np.ndarray:
-        """Score a list of RDKit Mols. Returns rewards in [0, 1] (score/100)."""
+        """Score a list of RDKit Mols. Returns raw scores in [0, 100].
+
+        Saturn applies the reward-shaping sigmoid (low=40, high=90 in the config)
+        to these raw values, so we must return the 0-100 scale, not a 0-1 reward.
+        """
         results = np.zeros(len(mols), dtype=np.float32)
 
         all_smiles = []
@@ -181,7 +225,7 @@ class MBHcatalystscore(OracleComponent):
 
             for idx in batch_indices:
                 per_call = [run[idx] for run in batch_runs]
-                results[idx] = float(sum(per_call) / len(per_call)) / 100.0
+                results[idx] = float(sum(per_call) / len(per_call))
 
             if self.rate_limit_delay > 0:
                 time.sleep(self.rate_limit_delay)

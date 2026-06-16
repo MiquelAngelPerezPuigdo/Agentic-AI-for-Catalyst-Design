@@ -22,6 +22,7 @@ This suite is divided into three distinct benchmarking modules:
 
 * **Conda/Miniconda:** Required to manage the chemistry-specific dependencies (`rdkit`, `scikit-learn`).
 * **OpenRouter API Key:** The suite interfaces with frontier models (e.g., Gemini, Claude, GPT) dynamically via OpenRouter.
+* **Anthropic API Key (optional, for `saturn-mbh`):** The MBH oracle can score directly against Anthropic's API (e.g. Claude Opus) by setting `ANTHROPIC_API_KEY`; see [Saturn-MBH usage](#4-saturn-mbh-de-novo-mbh-catalyst-design-via-generative-model).
 * **Saturn (only for `--mode saturn-mbh`):** The *de novo* MBH catalyst-design campaign drives an external [Saturn](https://github.com/MiquelAngelPerezPuigdo/saturn) generative model. All other modules run without it. See [Saturn setup](#-saturn-setup-only-for---mode-saturn-mbh) below.
 
 ---
@@ -42,9 +43,11 @@ This suite is divided into three distinct benchmarking modules:
    ```
 
 3. **Configure Environment Variables:**
-   Create a `.env` file in the root directory and add your API key:
+   Create a `.env` file in the root directory and add your API key(s):
    ```env
    OPENROUTER_API_KEY=your_actual_api_key_here
+   # Optional: for scoring saturn-mbh candidates directly with Claude
+   ANTHROPIC_API_KEY=your_anthropic_key_here
    ```
 
 4. **Prepare Data:**
@@ -164,29 +167,35 @@ Saturn itself lives **outside** this repository. Only the essential MBH delta is
 **Prerequisites:**
 * A Saturn checkout (defaults to `~/saturn`; override with `--saturn-home` or `export SATURN_HOME=...`).
 * A conda env where Saturn runs (defaults to `saturn`; override with `--saturn-env`).
-* `OPENROUTER_API_KEY` set (the oracle scores via OpenRouter, like the other modules).
+* An API key for the oracle. The backend is auto-detected from the key:
+  * `ANTHROPIC_API_KEY` (`sk-ant-...`) → scores directly via Anthropic's API (e.g. Claude Opus).
+  * `OPENROUTER_API_KEY` → scores via OpenRouter (Gemini, GPT, etc.), like the other modules.
+  The key is read from the environment and forwarded to the Saturn subprocess; it is **never** written into the config file on disk.
 
 ```bash
 # Dry run: inject the oracle + write the Saturn config, but DO NOT launch (no API/GPU cost)
 python main.py --mode saturn-mbh --dry-run
 
-# Full campaign (500 oracle-call budget by default)
+# Full campaign with the default OpenRouter model (500 oracle-call budget by default)
 python main.py --mode saturn-mbh --budget 500
+
+# Run with Claude Opus via Anthropic (set ANTHROPIC_API_KEY first)
+python main.py --mode saturn-mbh --model claude-opus-4-8 --budget 500
 
 # Point at a specific Saturn install / env / device
 python main.py --mode saturn-mbh --saturn-home ~/saturn --saturn-env saturn --device cuda
 ```
 
-On launch the bridge: (1) copies the oracle into Saturn as `agentic_mbh_oracle.py` and registers it as the component `agentic_mbh_catalyst_score` (idempotent — never clobbers the fork's own files, and defensively disables any broken sibling oracle import); (2) writes a Saturn config into `output/saturn_mbh/mbh_catalyst_run/`; (3) runs `saturn.py` in the Saturn conda env; (4) renders the score-vs-calls figure from the resulting `oracle_history.csv`.
+On launch the bridge: (1) copies the oracle into Saturn as `agentic_mbh_oracle.py` and registers it as the component `agentic_mbh_catalyst_score` (idempotent — never clobbers the fork's own files, and defensively disables any broken sibling oracle import); (2) writes a Saturn config into a **per-model** folder `output/saturn_mbh/run_<model>/` (so different models' artifacts never get mixed up); (3) runs `saturn.py` in the Saturn conda env; (4) renders the score-vs-calls figure from the resulting `oracle_history.csv`.
 
-> The latest campaign results from this machine (run 17: 501 evaluations, `oracle_history_MBH_17.csv`, plus the `score_vs_calls` figure and the plot script) are already included under [`output/saturn_mbh/mbh_catalyst_run/`](output/saturn_mbh/mbh_catalyst_run/). The figure can be regenerated at any time with `python output/saturn_mbh/mbh_catalyst_run/plot_score_vs_calls.py`. Saturn agent checkpoints (`.ckpt`, multi-GB) are intentionally **not** vendored.
+> Example campaign results are included under [`output/saturn_mbh/`](output/saturn_mbh/): `run_claude-opus-4-8/` (Claude Opus) and `run_gemini_3-5_Flash/` (Gemini), each with its `oracle_history.csv`, `score_vs_calls` figure, and the plot script. The figure can be regenerated at any time with `python output/saturn_mbh/run_<model>/plot_score_vs_calls.py`. Saturn agent checkpoints (`.ckpt`, multi-GB) are intentionally **not** vendored (see `.gitignore`).
 
 #### Optional CLI Arguments (saturn-mbh)
 * `--budget <int>`: Oracle-call budget for the campaign (default: `500`).
 * `--saturn-home <path>`: Path to the external Saturn checkout (default: `$SATURN_HOME` or `~/saturn`).
 * `--saturn-env <name>`: Conda env in which to run Saturn (default: `saturn`).
 * `--device <cuda|cpu>`: Device passed to Saturn (default: `cuda`).
-* `--model <id>`: OpenRouter model for the oracle (default: `google/gemini-3.5-flash`).
+* `--model <id>`: Model for the oracle. An OpenRouter id (default: `google/gemini-3.5-flash`) or an Anthropic id (e.g. `claude-opus-4-8`) when `ANTHROPIC_API_KEY` is set.
 * `--dry-run`: Inject the oracle and write the config, but do not launch Saturn.
 
 ---

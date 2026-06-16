@@ -34,8 +34,12 @@ REWARD_COLOR = "#2ca02c"
 
 
 def _find_csv() -> str:
-    """Locate the oracle-history CSV in this directory."""
-    for name in ("oracle_history_MBH_17.csv", "oracle_history.csv"):
+    """Locate the oracle-history CSV in this directory.
+
+    Prefer the canonical launcher output (oracle_history.csv) so a fresh run wins
+    over any bundled legacy CSV (oracle_history_MBH_17.csv) left in the directory.
+    """
+    for name in ("oracle_history.csv", "oracle_history_MBH_17.csv"):
         p = os.path.join(HERE, name)
         if os.path.exists(p):
             return p

@@ -116,7 +116,6 @@ def inject_oracle(saturn_home: Path) -> None:
 def render_config(
     saturn_home: Path,
     run_dir: Path,
-    api_key: str,
     model: str,
     budget: int,
     batch_size: int,
@@ -125,7 +124,13 @@ def render_config(
     seed: int,
     device: str,
 ) -> Path:
-    """Write a Saturn goal-directed-generation config JSON for the MBH campaign."""
+    """Write a Saturn goal-directed-generation config JSON for the MBH campaign.
+
+    The API key is deliberately *not* written into this file (it would otherwise be
+    a plaintext secret on disk). The oracle reads it from the environment
+    (ANTHROPIC_API_KEY / OPENROUTER_API_KEY), which the launcher forwards to the
+    Saturn subprocess.
+    """
     prior_path = str((saturn_home / prior).resolve())
     config = {
         "logging": {
@@ -143,7 +148,6 @@ def render_config(
                     "weight": 1,
                     "preliminary_check": False,
                     "specific_parameters": {
-                        "api_key": api_key,
                         "model_name": model,
                         "num_calls": num_calls,
                         "batch_size": batch_size,
@@ -237,23 +241,27 @@ def run_mbh_campaign(
     """
     from src.paths import out_dir  # local import to avoid hard dep at module load
 
-    api_key = api_key or os.getenv("OPENROUTER_API_KEY")
+    api_key = api_key or os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENROUTER_API_KEY")
     if not api_key and not dry_run:
         raise SystemExit(
-            "[!] OPENROUTER_API_KEY is not set. Add it to your .env or export it before launching."
+            "[!] No API key found. Set ANTHROPIC_API_KEY (for Claude) or OPENROUTER_API_KEY "
+            "in your .env or export it before launching."
         )
 
     saturn_path = resolve_saturn_home(saturn_home)
     inject_oracle(saturn_path)
 
-    # Canonical run dir, matching the results already brought under this repo's roof.
-    run_dir = Path(out_dir("saturn_mbh")) / "mbh_catalyst_run"
+    # Per-model run dir so different models' artifacts never get mixed up (e.g.
+    # 'claude-opus-4-8' -> output/saturn_mbh/run_claude-opus-4-8/). Resolve to an
+    # absolute path: Saturn runs with cwd=<saturn_home>, so relative paths in the
+    # config (logs, checkpoints) would otherwise land under Saturn.
+    model_slug = model.replace("/", "_").replace(":", "_")
+    run_dir = (Path(out_dir("saturn_mbh")) / f"run_{model_slug}").resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
 
     config_path = render_config(
         saturn_home=saturn_path,
         run_dir=run_dir,
-        api_key=api_key or "DRY_RUN_NO_KEY",
         model=model,
         budget=budget,
         batch_size=batch_size,
@@ -273,10 +281,15 @@ def run_mbh_campaign(
 
     cmd = [
         "conda", "run", "--no-capture-output", "-n", saturn_env,
-        "python", "saturn.py", str(config_path),
+        "python", "saturn.py", str(config_path.resolve()),
     ]
     print(f"[+] Launching Saturn (env '{saturn_env}'):\n    {' '.join(cmd)}")
-    subprocess.run(cmd, cwd=str(saturn_path), check=True)
+    # Forward the API key to the Saturn subprocess via the environment so the
+    # oracle can read it without ever persisting the secret to the config on disk.
+    sub_env = os.environ.copy()
+    key_var = "ANTHROPIC_API_KEY" if api_key.startswith("sk-ant-") else "OPENROUTER_API_KEY"
+    sub_env[key_var] = api_key
+    subprocess.run(cmd, cwd=str(saturn_path), check=True, env=sub_env)
 
     # Render the score-vs-calls figure from the campaign's oracle_history.
     _generate_plot(run_dir)
