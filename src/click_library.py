@@ -6,7 +6,6 @@ LLM only the short precursor lists and accept compact (alkyne_id, azide_id) prop
 
 Public API:
     get_library()           -> dict with ordered alkynes, azides, reagent SMILES, and product map
-    recombine(a_idx, z_idx) -> canonical product SMILES for one (alkyne, azide) pair (or None)
 """
 
 import os
@@ -161,12 +160,6 @@ def get_library():
     if _CACHE is None:
         _CACHE = _build()
     return _CACHE
-
-
-def recombine(alkyne_idx, azide_idx):
-    """Return the canonical product SMILES for one (alkyne_id, azide_id) pair, or None."""
-    lib = get_library()
-    return lib["product_map"].get((alkyne_idx, azide_idx))
 
 
 def format_building_blocks():

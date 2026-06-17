@@ -491,30 +491,3 @@ def plot_ablation_comparison(ablation_results, model_name, steps_count=14, outpu
     plt.savefig(output_path.replace(".png", ".svg"), bbox_inches="tight")
     print(f"\n-> Ablation plot successfully saved to '{output_path}' (+ .svg).")
     plt.close()
-
-
-def load_all_ablation_results():
-    """Load every available ablation_results_{mode}.json from output/ into a dict."""
-    ablation_results = {}
-    for m in AVAILABLE_ABLATION_MODES:
-        json_path = out_path("ablations", f"ablation_results_{m}.json")
-        if os.path.exists(json_path):
-            try:
-                with open(json_path, "r") as f:
-                    data = json.load(f)
-                    if isinstance(data, dict):
-                        val = next(iter(data.values()))
-                        ablation_results[m] = val if isinstance(val, list) else data
-                    else:
-                        ablation_results[m] = data
-            except Exception:
-                pass
-    return ablation_results
-
-
-def plot_all_ablations(model_name="google/gemini-3.5-flash", steps_count=14):
-    """Regenerate the single combined ablation plot from all saved ablation_results_*.json."""
-    ablation_results = load_all_ablation_results()
-    output_path = out_path("ablations", "generative_active_learning_ablation_comparison.png")
-    plot_ablation_comparison(ablation_results, model_name, steps_count=steps_count, output_path=output_path)
-    return output_path

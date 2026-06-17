@@ -406,7 +406,7 @@ def run_prospective_campaign(campaign_id, model_name, surrogate, fp_gen, dataset
     except ImportError:
         return [] # Returns empty if RDkit isn't installed
 
-    from src.prompts import PROSPECTIVE_EXPLORE_DIRECTIVE, PROSPECTIVE_EXPLOIT_DIRECTIVE, PROSPECTIVE_SYSTEM_PROMPT, DIVERGENT_SYNTHESIS_DIRECTIVE
+    from src.prompts import PROSPECTIVE_SYSTEM_PROMPT, DIVERGENT_SYNTHESIS_DIRECTIVE
     
     print(f"[{model_name.split('/')[-1]} | Campaign {campaign_id} | Ablation {ablation_mode}] Starting with {total_iterations} steps ({num_proposals}/step)...")
     history_records = []
