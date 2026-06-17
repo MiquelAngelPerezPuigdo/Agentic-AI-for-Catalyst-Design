@@ -8,7 +8,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Models
 FRONTIER_MODELS = [
-    "anthropic/claude-opus-4.7",
+    "anthropic/claude-opus-4.8",
     "openai/gpt-5.5",
     "google/gemini-3.1-pro-preview",
     "x-ai/grok-4.3"

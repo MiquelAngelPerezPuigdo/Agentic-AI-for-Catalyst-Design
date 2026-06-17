@@ -1,0 +1,121 @@
+Model,Task,Level,Iteration,Top_5_Overlap,Top_K,Valid_Ligands_Ranked
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 1 (Zero-Shot),1,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 1 (Zero-Shot),2,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 1 (Zero-Shot),3,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 1 (Zero-Shot),4,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 1 (Zero-Shot),5,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 2 (CoT: Auto-Mechanism),1,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 2 (CoT: Auto-Mechanism),2,0,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 2 (CoT: Auto-Mechanism),3,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 2 (CoT: Auto-Mechanism),4,0,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 2 (CoT: Auto-Mechanism),5,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 3 (CoT: Mechanism -> Properties),1,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 3 (CoT: Mechanism -> Properties),2,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 3 (CoT: Mechanism -> Properties),3,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 3 (CoT: Mechanism -> Properties),4,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 3 (CoT: Mechanism -> Properties),5,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 4 (Supplied Mechanism -> Properties),1,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 4 (Supplied Mechanism -> Properties),2,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 4 (Supplied Mechanism -> Properties),3,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 4 (Supplied Mechanism -> Properties),4,1,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 4 (Supplied Mechanism -> Properties),5,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 5 (Paper Context Zero-Shot),1,3,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 5 (Paper Context Zero-Shot),2,3,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 5 (Paper Context Zero-Shot),3,3,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 5 (Paper Context Zero-Shot),4,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 5 (Paper Context Zero-Shot),5,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 6 (Paper Context -> Mechanism -> Properties),1,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 6 (Paper Context -> Mechanism -> Properties),2,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 6 (Paper Context -> Mechanism -> Properties),3,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 6 (Paper Context -> Mechanism -> Properties),4,2,5,29
+claude-opus-4.8,Ni_Epoxide_Coupling,Level 6 (Paper Context -> Mechanism -> Properties),5,2,5,29
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 1 (Zero-Shot),1,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 1 (Zero-Shot),2,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 1 (Zero-Shot),3,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 1 (Zero-Shot),4,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 1 (Zero-Shot),5,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),1,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),2,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),3,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),4,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),5,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),1,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),2,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),3,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),4,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),5,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),1,2,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),2,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),3,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),4,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),5,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),1,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),2,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),3,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),4,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),5,4,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),1,5,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),2,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),3,3,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),4,5,5,18
+gemini-3.1-pro-preview,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),5,5,5,18
+claude-opus-4.8,Pd_Dual_Catalysis,Level 1 (Zero-Shot),1,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 1 (Zero-Shot),2,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 1 (Zero-Shot),3,1,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 1 (Zero-Shot),4,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 1 (Zero-Shot),5,5,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 2 (CoT: Auto-Mechanism),1,4,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 2 (CoT: Auto-Mechanism),2,5,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 2 (CoT: Auto-Mechanism),3,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 2 (CoT: Auto-Mechanism),4,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 2 (CoT: Auto-Mechanism),5,2,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 3 (CoT: Mechanism -> Properties),1,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 3 (CoT: Mechanism -> Properties),2,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 3 (CoT: Mechanism -> Properties),3,1,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 3 (CoT: Mechanism -> Properties),4,2,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 3 (CoT: Mechanism -> Properties),5,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 4 (Supplied Mechanism -> Properties),1,4,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 4 (Supplied Mechanism -> Properties),2,2,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 4 (Supplied Mechanism -> Properties),3,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 4 (Supplied Mechanism -> Properties),4,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 4 (Supplied Mechanism -> Properties),5,4,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 5 (Paper Context Zero-Shot),1,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 5 (Paper Context Zero-Shot),2,2,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 5 (Paper Context Zero-Shot),3,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 5 (Paper Context Zero-Shot),4,2,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 5 (Paper Context Zero-Shot),5,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 6 (Paper Context -> Mechanism -> Properties),1,3,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 6 (Paper Context -> Mechanism -> Properties),2,4,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 6 (Paper Context -> Mechanism -> Properties),3,4,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 6 (Paper Context -> Mechanism -> Properties),4,2,10,85
+claude-opus-4.8,Pd_Dual_Catalysis,Level 6 (Paper Context -> Mechanism -> Properties),5,1,10,85
+claude-opus-4.8,Pd_Fluorination,Level 1 (Zero-Shot),1,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 1 (Zero-Shot),2,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 1 (Zero-Shot),3,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 1 (Zero-Shot),4,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 1 (Zero-Shot),5,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 2 (CoT: Auto-Mechanism),1,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 2 (CoT: Auto-Mechanism),2,2,5,18
+claude-opus-4.8,Pd_Fluorination,Level 2 (CoT: Auto-Mechanism),3,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 2 (CoT: Auto-Mechanism),4,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 2 (CoT: Auto-Mechanism),5,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 3 (CoT: Mechanism -> Properties),1,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 3 (CoT: Mechanism -> Properties),2,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 3 (CoT: Mechanism -> Properties),3,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 3 (CoT: Mechanism -> Properties),4,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 3 (CoT: Mechanism -> Properties),5,2,5,18
+claude-opus-4.8,Pd_Fluorination,Level 4 (Supplied Mechanism -> Properties),1,2,5,18
+claude-opus-4.8,Pd_Fluorination,Level 4 (Supplied Mechanism -> Properties),2,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 4 (Supplied Mechanism -> Properties),3,5,5,18
+claude-opus-4.8,Pd_Fluorination,Level 4 (Supplied Mechanism -> Properties),4,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 4 (Supplied Mechanism -> Properties),5,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 5 (Paper Context Zero-Shot),1,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 5 (Paper Context Zero-Shot),2,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 5 (Paper Context Zero-Shot),3,1,5,18
+claude-opus-4.8,Pd_Fluorination,Level 5 (Paper Context Zero-Shot),4,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 5 (Paper Context Zero-Shot),5,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),1,3,5,18
+claude-opus-4.8,Pd_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),2,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),3,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),4,4,5,18
+claude-opus-4.8,Pd_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),5,4,5,18

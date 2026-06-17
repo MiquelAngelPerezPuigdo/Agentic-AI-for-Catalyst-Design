@@ -56,8 +56,12 @@ def extract_scores_json(response_text):
         print(f"\n    [!] JSON Parsing Failed. Model output invalid JSON.")
         return {}
 
-def calculate_top_5_overlap(predicted_list, true_list):
-    if not predicted_list: return 0 
+def calculate_top_k_overlap(predicted_list, true_list, k=5):
+    if not predicted_list: return 0
     valid_predicted = [p for p in predicted_list if p in true_list]
-    predicted_top_k = set(valid_predicted[:5]) if len(valid_predicted) >= 5 else set(valid_predicted)
-    return len(set(true_list[:5]).intersection(predicted_top_k))
+    predicted_top_k = set(valid_predicted[:k]) if len(valid_predicted) >= k else set(valid_predicted)
+    return len(set(true_list[:k]).intersection(predicted_top_k))
+
+
+def calculate_top_5_overlap(predicted_list, true_list):
+    return calculate_top_k_overlap(predicted_list, true_list, k=5)
