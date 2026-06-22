@@ -250,4 +250,4 @@ docs/docs_out
 
 # Saturn-MBH campaign artifacts: never vendor the multi-GB model checkpoints.
 # Lightweight artifacts (oracle_history.csv, score_vs_calls.*, configs) are kept.
-output/saturn_mbh/**/*.ckpt
+output/saturn_mbh/**/*.ckptoutput/saturn_mbh/logs/

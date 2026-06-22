@@ -55,17 +55,30 @@ def _extract_json(content: str) -> str:
     return text.strip()
 
 
-def is_valid_mbh_catalyst(mol) -> bool:
-    """Hard physical/structural filters that a candidate must pass before scoring."""
+def is_valid_mbh_catalyst(mol, max_mol_wt: float = MAX_MOL_WT,
+                          max_rotatable_bonds: int = MAX_ROTATABLE_BONDS,
+                          require_neutral: bool = False) -> bool:
+    """Hard physical/structural filters that a candidate must pass before scoring.
+
+    The MW and rotatable-bond ceilings are configurable so campaigns can explore
+    a larger chemical space (defaults match the original compact-scaffold guards).
+
+    With ``require_neutral=True``, any molecule carrying a non-zero formal charge
+    on ANY atom is rejected. Real MBH catalysts are neutral tertiary amines, so
+    this stops the RL agent reward-hacking by appending an anionic carboxylate
+    (or any charged group) to please the LLM judge.
+    """
     if mol is None:
         return False
     if not mol.HasSubstructMatch(TERTIARY_AMINE_PATTERN):
         return False
     if mol.HasSubstructMatch(FORBIDDEN_NITROGENS):
         return False
-    if Descriptors.MolWt(mol) > MAX_MOL_WT:
+    if require_neutral and any(atom.GetFormalCharge() != 0 for atom in mol.GetAtoms()):
         return False
-    if rdMolDescriptors.CalcNumRotatableBonds(mol) > MAX_ROTATABLE_BONDS:
+    if Descriptors.MolWt(mol) > max_mol_wt:
+        return False
+    if rdMolDescriptors.CalcNumRotatableBonds(mol) > max_rotatable_bonds:
         return False
     return True
 
@@ -108,7 +121,9 @@ class MBHcatalystscore(OracleComponent):
 
         # Import lazily so the module is importable even where openai isn't installed.
         from openai import OpenAI
-        self.client = OpenAI(base_url=base_url, api_key=self.api_key)
+        # max_retries=0: we drive retries ourselves so the per-call timeout is the
+        # exact hard ceiling (no hidden SDK backoff stacking on top of it).
+        self.client = OpenAI(base_url=base_url, api_key=self.api_key, max_retries=0)
 
         default_model = "claude-opus-4-8" if self.is_anthropic else "google/gemini-3.5-flash"
         self.model_name = sp.get("model_name", default_model)
@@ -116,6 +131,30 @@ class MBHcatalystscore(OracleComponent):
         self.batch_size = int(sp.get("batch_size", 16))
         self.rate_limit_delay = float(sp.get("rate_limit_delay", 1.0))
         self.max_tokens = int(sp.get("max_tokens", 4096))
+        # Structural filter ceilings (configurable to widen the search space).
+        self.max_mol_wt = float(sp.get("max_mol_wt", MAX_MOL_WT))
+        self.max_rotatable_bonds = int(sp.get("max_rotatable_bonds", MAX_ROTATABLE_BONDS))
+        # Enforce overall neutrality (reject any formally charged atom, e.g. a
+        # carboxylate) so the agent can't reward-hack with anionic groups.
+        self.require_neutral = bool(sp.get("require_neutral", False))
+        # Hard per-call timeout (seconds): if one call (one batch attempt) exceeds
+        # this, it is aborted and the SAME batch is asked again (see
+        # full_batch_attempts) rather than scored 0 -- a slow answer must not be
+        # mistaken for a bad one.
+        self.request_timeout = float(sp.get("request_timeout", 600.0))
+        # Fallback ladder for a batch whose call times out / errors:
+        #   1. Re-ask the FULL batch up to `full_batch_attempts` times.
+        #   2. If all fail, score each molecule individually (one call per mol) --
+        #      a single molecule is fast and reasoning-light, so a slow full batch
+        #      is retried cheaply one-by-one instead of being thrown away.
+        #   3. Only if a molecule's individual call also fails is it scored 0.0.
+        self.full_batch_attempts = int(sp.get("full_batch_attempts", 2))
+        # Reasoning controls for heavy "thinking" models (e.g. Kimi/o-series via
+        # OpenRouter): keep them from over-thinking forever. Only sent when set.
+        #   reasoning_effort:     "low" | "medium" | "high"
+        #   reasoning_max_tokens: hard cap on internal reasoning tokens.
+        self.reasoning_effort = sp.get("reasoning_effort")
+        self.reasoning_max_tokens = sp.get("reasoning_max_tokens")
         # Prompt caching: the large static MBH-mechanism block is identical across
         # every batch and across the `num_calls` replicate calls, so it is an ideal
         # cache prefix. Enabled by default; controlled from the Saturn config JSON.
@@ -201,33 +240,87 @@ class MBHcatalystscore(OracleComponent):
         # a single concatenated string keeps that prefix byte-stable across batches.
         return [{"role": "user", "content": self._STATIC_PROMPT_PREFIX + variable_suffix}]
 
-    def _make_batch_api_call(self, messages: list, expected_indices: list) -> dict:
-        """One LLM call; returns {index: clamped_score_0_100}. Errors score 0.0."""
-        try:
-            # Anthropic's OpenAI-compatible endpoint rejects response_format
-            # 'json_object' and requires max_tokens; OpenRouter accepts both.
-            kwargs = {
-                "model": self.model_name,
-                "messages": messages,
-            }
-            if self.is_anthropic:
-                kwargs["max_tokens"] = self.max_tokens
-            else:
-                kwargs["response_format"] = {"type": "json_object"}
+    def _attempt_call(self, messages: list, expected_indices: list) -> dict | None:
+        """One LLM attempt. Returns {index: clamped_score} on success, or None if
+        the call timed out / errored / returned unparseable content (so the caller
+        can decide whether to retry, split, or fall back)."""
+        kwargs = {
+            "model": self.model_name,
+            "messages": messages,
+            # Hard per-call timeout so a stuck request is aborted (then handled).
+            "timeout": self.request_timeout,
+        }
+        if self.is_anthropic:
+            kwargs["max_tokens"] = self.max_tokens
+        else:
+            kwargs["response_format"] = {"type": "json_object"}
 
+        # Bound the thinking budget for heavy reasoning models so they can't
+        # over-think forever. OpenRouter accepts a `reasoning` block via
+        # extra_body; we only send it when explicitly configured.
+        reasoning = {}
+        if self.reasoning_effort:
+            reasoning["effort"] = self.reasoning_effort
+        if self.reasoning_max_tokens:
+            reasoning["max_tokens"] = int(self.reasoning_max_tokens)
+        if reasoning and not self.is_anthropic:
+            kwargs["extra_body"] = {"reasoning": reasoning}
+
+        try:
             response = self.client.chat.completions.create(**kwargs)
             raw_scores = json.loads(_extract_json(response.choices[0].message.content))
-        except Exception as e:  # noqa: BLE001 - never let an API hiccup kill a campaign
-            print(f"[MBH oracle] Batch API error: {e}")
-            return {int(idx): 0.0 for idx in expected_indices}
+        except Exception as e:  # noqa: BLE001 - timeout/network/parse: let caller handle it
+            print(f"[MBH oracle] Call failed/timed out: {e}")
+            return None
 
-        cleaned = {}
+        return {int(idx): self._clamp_score(raw_scores.get(str(idx))) for idx in expected_indices}
+
+    @staticmethod
+    def _clamp_score(value) -> float:
+        """Coerce a raw model score to a float in [0, 100]; unparseable -> 0.0."""
+        try:
+            return max(0.0, min(100.0, float(value)))
+        except (TypeError, ValueError):
+            return 0.0
+
+    def _make_batch_api_call(self, smiles_map: dict) -> dict:
+        """Score one batch via a fallback ladder, returning {index: score_0_100}.
+
+        Ladder (a slow reasoning answer must never be mistaken for a 0):
+          1. Ask the FULL batch up to ``full_batch_attempts`` times.
+          2. If all full-batch attempts fail (e.g. repeated timeouts), score each
+             molecule INDIVIDUALLY -- single molecules are fast and reasoning-light.
+          3. Only a molecule whose individual call also fails is scored 0.0.
+        """
+        expected_indices = list(smiles_map.keys())
+        messages = self._build_messages(smiles_map)
+
+        # Step 1: full batch, up to N attempts.
+        for attempt in range(self.full_batch_attempts):
+            result = self._attempt_call(messages, expected_indices)
+            if result is not None:
+                return result
+            print(
+                f"[MBH oracle] Full-batch attempt {attempt + 1}/{self.full_batch_attempts} "
+                f"failed for {len(expected_indices)} molecules."
+            )
+
+        # Step 2: fall back to scoring each molecule on its own.
+        print(
+            f"[MBH oracle] Falling back to per-molecule scoring for "
+            f"{len(expected_indices)} molecules."
+        )
+        scores = {}
         for idx in expected_indices:
-            try:
-                cleaned[int(idx)] = max(0.0, min(100.0, float(raw_scores.get(str(idx), 0.0))))
-            except (TypeError, ValueError):
-                cleaned[int(idx)] = 0.0
-        return cleaned
+            single_msgs = self._build_messages({idx: smiles_map[idx]})
+            single = self._attempt_call(single_msgs, [idx])
+            if single is not None:
+                scores[idx] = single[idx]
+            else:
+                # Step 3: even the single-molecule call failed -> 0.0.
+                print(f"[MBH oracle] Per-molecule call failed for index {idx}; scoring 0.0.")
+                scores[idx] = 0.0
+        return scores
 
     def __call__(self, mols: list) -> np.ndarray:
         """Score a list of RDKit Mols. Returns raw scores in [0, 100].
@@ -240,7 +333,7 @@ class MBHcatalystscore(OracleComponent):
         all_smiles = []
         valid_indices = []
         for i, mol in enumerate(mols):
-            if is_valid_mbh_catalyst(mol):
+            if is_valid_mbh_catalyst(mol, self.max_mol_wt, self.max_rotatable_bonds, self.require_neutral):
                 all_smiles.append(Chem.MolToSmiles(mol))
                 valid_indices.append(i)
             else:
@@ -249,26 +342,25 @@ class MBHcatalystscore(OracleComponent):
         for start in range(0, len(valid_indices), self.batch_size):
             batch_indices = valid_indices[start:start + self.batch_size]
             smiles_map = {idx: all_smiles[idx] for idx in batch_indices}
-            messages = self._build_messages(smiles_map)
 
             if self.use_prompt_caching and self.num_calls > 1:
                 # Prime-then-fan-out: run one replicate first so the provider-side
                 # cache is warm, then fan out the remaining identical calls as
                 # cache hits. (Concurrent calls would all miss the cold cache.)
-                batch_runs = [self._make_batch_api_call(messages, batch_indices)]
+                batch_runs = [self._make_batch_api_call(smiles_map)]
                 if self.num_calls > 2:
                     with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_calls - 1) as executor:
                         futures = [
-                            executor.submit(self._make_batch_api_call, messages, batch_indices)
+                            executor.submit(self._make_batch_api_call, smiles_map)
                             for _ in range(self.num_calls - 1)
                         ]
                         batch_runs.extend(f.result() for f in futures)
                 else:
-                    batch_runs.append(self._make_batch_api_call(messages, batch_indices))
+                    batch_runs.append(self._make_batch_api_call(smiles_map))
             else:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_calls) as executor:
                     futures = [
-                        executor.submit(self._make_batch_api_call, messages, batch_indices)
+                        executor.submit(self._make_batch_api_call, smiles_map)
                         for _ in range(self.num_calls)
                     ]
                     batch_runs = [f.result() for f in futures]

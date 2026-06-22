@@ -50,6 +50,20 @@ def _clip_errorbars_to_ymax(ax, ymax):
         line.set_ydata(clipped)
 
 
+def _task_num_catalysts(task_key):
+    """Number of catalysts N in a Benchmark 2 task (for the random-guess baseline).
+
+    Read from the ligand task definitions; returns None if unavailable so the
+    caller simply omits the baseline rather than crashing.
+    """
+    try:
+        from src.ligand_data import RANKING_TASKS
+        task = RANKING_TASKS.get(task_key, {})
+        return task.get("num_catalysts") or len(task.get("true_ranking", [])) or None
+    except Exception:
+        return None
+
+
 def generate_assessment_report(df, filename=None):
     """Generates a Markdown file outlining the best, worst, and all comments per reaction."""
     if filename is None:
@@ -190,6 +204,18 @@ def plot_level_hierarchy(csv_path="output/benchmark2_results.csv"):
         k = int(task_df['Top_K'].iloc[0]) if 'Top_K' in task_df.columns else 5
         # Clip SD whiskers so they never exceed the overlap scale max (k).
         _clip_errorbars_to_ymax(ax, k)
+
+        # Random-guess baseline: the expected Top-k overlap if a model ranked the
+        # N catalysts at random is k^2 / N (each of the k true-positives has a k/N
+        # chance of landing in the predicted top-k). Drawn as a reference line so a
+        # bar's height is read against "better than chance", not against zero.
+        n_catalysts = _task_num_catalysts(task)
+        if n_catalysts:
+            chance = k * k / n_catalysts
+            ax.axhline(chance, color="#c0392b", linestyle="--", linewidth=1.6, zorder=1)
+            ax.text(0.995, chance, f" random guess ({chance:.2f})",
+                    color="#c0392b", fontsize=11, va="bottom", ha="right",
+                    transform=ax.get_yaxis_transform())
 
         ax.set_ylabel(f"Top-{k} Overlap (0--{k})")
         ax.set_xlabel("Prompting Complexity Level")

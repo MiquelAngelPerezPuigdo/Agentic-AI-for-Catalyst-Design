@@ -39,6 +39,22 @@ def main():
                         help="Conda env name in which to run Saturn (default: 'saturn').")
     parser.add_argument("--budget", type=int, default=500,
                         help="saturn-mbh: oracle-call budget for the campaign (default: 500).")
+    parser.add_argument("--num-calls", type=int, default=3,
+                        help="saturn-mbh: replicate LLM calls per batch, averaged (default: 3).")
+    parser.add_argument("--reasoning-effort", choices=["low", "medium", "high"], default=None,
+                        help="saturn-mbh: cap reasoning effort for thinking models (e.g. Kimi) so they don't over-think.")
+    parser.add_argument("--reasoning-max-tokens", type=int, default=None,
+                        help="saturn-mbh: hard cap on internal reasoning tokens per call.")
+    parser.add_argument("--request-timeout", type=float, default=600.0,
+                        help="saturn-mbh: hard per-call API timeout in seconds (default: 600). A call exceeding this is aborted and the batch is re-asked.")
+    parser.add_argument("--full-batch-attempts", type=int, default=2,
+                        help="saturn-mbh: times to try the FULL batch before falling back to per-molecule scoring, then 0 (default: 2).")
+    parser.add_argument("--max-mol-wt", type=float, default=None,
+                        help="saturn-mbh: max molecular weight allowed by the structural filter (default: 250).")
+    parser.add_argument("--max-rotatable-bonds", type=int, default=None,
+                        help="saturn-mbh: max rotatable bonds allowed by the structural filter (default: 3).")
+    parser.add_argument("--require-neutral", action="store_true",
+                        help="saturn-mbh: reject any molecule with a non-zero formal charge (e.g. carboxylates), enforcing neutral catalysts.")
     parser.add_argument("--device", type=str, default="cuda",
                         help="saturn-mbh: device passed to Saturn ('cuda' or 'cpu', default: 'cuda').")
     parser.add_argument("--dry-run", action="store_true",
@@ -155,10 +171,18 @@ def main():
         run_dir = run_mbh_campaign(
             model=args.model,
             budget=args.budget,
+            num_calls=args.num_calls,
             saturn_home=args.saturn_home,
             saturn_env=args.saturn_env,
             device=args.device,
             dry_run=args.dry_run,
+            reasoning_effort=args.reasoning_effort,
+            reasoning_max_tokens=args.reasoning_max_tokens,
+            request_timeout=args.request_timeout,
+            full_batch_attempts=args.full_batch_attempts,
+            max_mol_wt=args.max_mol_wt,
+            max_rotatable_bonds=args.max_rotatable_bonds,
+            require_neutral=args.require_neutral,
         )
         print(f"\nSaturn-MBH campaign artifacts in: {run_dir}")
 

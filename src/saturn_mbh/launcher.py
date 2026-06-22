@@ -124,6 +124,13 @@ def render_config(
     seed: int,
     device: str,
     use_prompt_caching: bool = True,
+    reasoning_effort: str | None = None,
+    reasoning_max_tokens: int | None = None,
+    request_timeout: float = 600.0,
+    full_batch_attempts: int = 2,
+    max_mol_wt: float | None = None,
+    max_rotatable_bonds: int | None = None,
+    require_neutral: bool = False,
 ) -> Path:
     """Write a Saturn goal-directed-generation config JSON for the MBH campaign.
 
@@ -154,6 +161,13 @@ def render_config(
                         "batch_size": batch_size,
                         "rate_limit_delay": 1.0,
                         "use_prompt_caching": use_prompt_caching,
+                        "request_timeout": request_timeout,
+                        "full_batch_attempts": full_batch_attempts,
+                        **({"max_mol_wt": max_mol_wt} if max_mol_wt is not None else {}),
+                        **({"max_rotatable_bonds": max_rotatable_bonds} if max_rotatable_bonds is not None else {}),
+                        **({"require_neutral": True} if require_neutral else {}),
+                        **({"reasoning_effort": reasoning_effort} if reasoning_effort else {}),
+                        **({"reasoning_max_tokens": reasoning_max_tokens} if reasoning_max_tokens else {}),
                     },
                     "reward_shaping_function_parameters": {
                         "transformation_function": "sigmoid",
@@ -235,6 +249,13 @@ def run_mbh_campaign(
     api_key: str | None = None,
     dry_run: bool = False,
     use_prompt_caching: bool = True,
+    reasoning_effort: str | None = None,
+    reasoning_max_tokens: int | None = None,
+    request_timeout: float = 600.0,
+    full_batch_attempts: int = 2,
+    max_mol_wt: float | None = None,
+    max_rotatable_bonds: int | None = None,
+    require_neutral: bool = False,
 ) -> Path:
     """Inject the MBH oracle into Saturn and launch a de novo MBH design campaign.
 
@@ -273,6 +294,13 @@ def run_mbh_campaign(
         seed=seed,
         device=device,
         use_prompt_caching=use_prompt_caching,
+        reasoning_effort=reasoning_effort,
+        reasoning_max_tokens=reasoning_max_tokens,
+        request_timeout=request_timeout,
+        full_batch_attempts=full_batch_attempts,
+        max_mol_wt=max_mol_wt,
+        max_rotatable_bonds=max_rotatable_bonds,
+        require_neutral=require_neutral,
     )
 
     print(f"[+] Saturn home:   {saturn_path}")
