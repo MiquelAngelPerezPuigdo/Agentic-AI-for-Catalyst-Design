@@ -98,19 +98,68 @@ def color_for(s):
 
 # Apply the shared, thesis-quality theme used by all other figures in the repo.
 set_publication_style()
-fig = plt.figure(figsize=(16, 9))
-gs = fig.add_gridspec(1, 2, width_ratios=[2.3, 1.0])
-ax = fig.add_subplot(gs[0, 0])
+fig, ax = plt.subplots(figsize=(12, 11))
 
 markers = {"baseline": "o", "neutral": "^"}
 for cls in ["baseline", "neutral"]:
     sub = data[data.cls == cls]
-    ax.scatter(sub.x, sub.y, s=70, alpha=0.85,
+    ax.scatter(sub.x, sub.y, s=80, alpha=0.85,
                c=[color_for(s) for s in sub.scaffold],
                marker=markers[cls], edgecolors="black", linewidths=0.4)
 
-# No title (consistent with the other repo figures); class key lives in the legend.
-ax.set_xlabel("UMAP-1"); ax.set_ylabel("UMAP-2")
+# No title (consistent with other repo figures); labels and axes are clean
+ax.set_xlabel("UMAP-1")
+ax.set_ylabel("UMAP-2")
+
+# Embed scaffold molecule drawings directly inside the plot's open spaces
+# with lines pointing to their cluster centroids.
+OFFSETS = [
+    (-100, -50), # #1 (pyrrolizidine bottom-left)
+    (-40, 70),   # #2 (indolizidine top-left)
+    (-100, 30),  # #3 (cyclobutane fused top-left)
+    (50, 80),    # #4 (quinuclidine top-right)
+    (90, -45),   # #5 (fused azabicyclic center-right)
+    (95, 45),    # #6 (fused azabicyclic variant)
+    (95, 0),     # #7 (bridged azabicyclic far-right)
+    (-100, -10), # #8 (fused azabicyclic left)
+]
+
+for i, s in enumerate(top_scaffolds):
+    sub_scaf = data[data.scaffold == s]
+    centroid_x = sub_scaf["x"].mean()
+    centroid_y = sub_scaf["y"].mean()
+    
+    # Draw scaffold and highlight the bridgehead Nitrogen atom
+    m = Chem.MolFromSmiles(s)
+    highlight = [a.GetIdx() for a in m.GetAtoms() if a.GetSymbol() == "N"]
+    img = Draw.MolToImage(m, size=(100, 80), highlightAtoms=highlight, highlightColor=(0.85, 0.15, 0.15, 0.35))
+    
+    # Create matplotlib imagebox
+    from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+    imagebox = OffsetImage(img, zoom=0.75)
+    
+    # Place on plot with an arrow pointing to the cluster centroid
+    ab = AnnotationBbox(
+        imagebox,
+        (centroid_x, centroid_y),
+        xybox=OFFSETS[i],
+        xycoords="data",
+        boxcoords="offset points",
+        arrowprops=dict(arrowstyle="->", color="#7f8c8d", lw=1.2, alpha=0.7),
+        bboxprops=dict(edgecolor=scaf_color[s], lw=1.5, facecolor="white", alpha=0.9, boxstyle="round,pad=0.15")
+    )
+    ax.add_artist(ab)
+    
+    # Label the box with its matching scaffold rank
+    # Position text slightly above/left of the image box
+    tx = centroid_x
+    ty = centroid_y
+    ax.annotate(f"#{i+1}", xy=(tx, ty), xytext=(OFFSETS[i][0] - 40, OFFSETS[i][1] + 35),
+                textcoords="offset points", fontsize=10, weight="bold", color="#2c3e50")
+
+# Expand axis limits to comfortably fit the annotated boxes
+ax.set_xlim(data.x.min() - 4.5, data.x.max() + 4.5)
+ax.set_ylim(data.y.min() - 3.5, data.y.max() + 3.5)
 
 legend_items = [Line2D([0], [0], marker="o", color="w",
                        markerfacecolor=scaf_color[s], markeredgecolor="black",
@@ -125,17 +174,7 @@ legend_items += [
     Line2D([0], [0], marker="^", color="w", markerfacecolor="white",
            markeredgecolor="black", markersize=10, label="neutral (triangle)"),
 ]
-ax.legend(handles=legend_items, loc="best", framealpha=0.9)
-
-# Draw the scaffolds WITH the nitrogen highlighted.
-mols = [Chem.MolFromSmiles(s) for s in top_scaffolds]
-highlights = [[a.GetIdx() for a in m.GetAtoms() if m and a.GetSymbol() == "N"] for m in mols]
-legends = [f"#{i+1}  n={counts[s]}" for i, s in enumerate(top_scaffolds)]
-grid = Draw.MolsToGridImage(mols, molsPerRow=2, subImgSize=(220, 180),
-                            legends=legends, highlightAtomLists=highlights)
-gax = fig.add_subplot(gs[0, 1])
-gax.imshow(grid)
-gax.axis("off")
+ax.legend(handles=legend_items, loc="upper left", framealpha=0.9)
 
 fig.tight_layout()
 out = os.path.join(BASE, "umap_gemini_scaffold_N_gt50.png")
