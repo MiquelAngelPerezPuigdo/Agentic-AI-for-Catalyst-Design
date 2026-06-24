@@ -9,6 +9,7 @@ Run:  conda run -n ppchem python scripts/umap_mbh_scaffolds.py
 """
 import glob
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -21,9 +22,13 @@ import umap
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import seaborn as sns
 from matplotlib.lines import Line2D
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO)  # so 'src' is importable when run as a script
+from src.report import set_publication_style
+
 BASE = os.path.join(REPO, "output", "saturn_mbh")
 SCORE_COLS = ("agentic_mbh_catalyst_score_raw_values", "MBH_catalyst_score_raw_values")
 SCORE_MIN = 50.0
@@ -83,12 +88,16 @@ data["x"], data["y"] = emb[:, 0], emb[:, 1]
 counts = data.scaffold.value_counts()
 TOPN = 8
 top_scaffolds = list(counts.index[:TOPN])
-cmap = plt.get_cmap("tab10")
-scaf_color = {s: cmap(i) for i, s in enumerate(top_scaffolds)}
+# Colorblind-safe qualitative palette (matches the repo's publication style).
+GREY = (0.6, 0.6, 0.6, 1.0)
+palette = sns.color_palette("colorblind", TOPN)
+scaf_color = {s: palette[i] for i, s in enumerate(top_scaffolds)}
 
 def color_for(s):
-    return scaf_color.get(s, (0.6, 0.6, 0.6, 1.0))
+    return scaf_color.get(s, GREY)
 
+# Apply the shared, thesis-quality theme used by all other figures in the repo.
+set_publication_style()
 fig = plt.figure(figsize=(16, 9))
 gs = fig.add_gridspec(1, 2, width_ratios=[2.3, 1.0])
 ax = fig.add_subplot(gs[0, 0])
@@ -100,16 +109,14 @@ for cls in ["baseline", "neutral"]:
                c=[color_for(s) for s in sub.scaffold],
                marker=markers[cls], edgecolors="black", linewidths=0.4)
 
-ax.set_title(f"UMAP of MBH catalysts (score>{SCORE_MIN:.0f}) — colored by Murcko scaffold (N kept)\n"
-             "circle = baseline filter,  triangle = neutral filter", fontsize=12)
+# No title (consistent with the other repo figures); class key lives in the legend.
 ax.set_xlabel("UMAP-1"); ax.set_ylabel("UMAP-2")
-ax.grid(alpha=0.2)
 
 legend_items = [Line2D([0], [0], marker="o", color="w",
                        markerfacecolor=scaf_color[s], markeredgecolor="black",
                        markersize=10, label=f"scaffold #{i+1}  (n={counts[s]})")
                 for i, s in enumerate(top_scaffolds)]
-legend_items.append(Line2D([0], [0], marker="o", color="w", markerfacecolor=(0.6, 0.6, 0.6),
+legend_items.append(Line2D([0], [0], marker="o", color="w", markerfacecolor=GREY,
                            markeredgecolor="black", markersize=10,
                            label=f"other  (n={len(data) - counts[top_scaffolds].sum()})"))
 legend_items += [
@@ -118,7 +125,7 @@ legend_items += [
     Line2D([0], [0], marker="^", color="w", markerfacecolor="white",
            markeredgecolor="black", markersize=10, label="neutral (triangle)"),
 ]
-ax.legend(handles=legend_items, fontsize=9, loc="best", framealpha=0.9)
+ax.legend(handles=legend_items, loc="best", framealpha=0.9)
 
 # Draw the scaffolds WITH the nitrogen highlighted.
 mols = [Chem.MolFromSmiles(s) for s in top_scaffolds]
@@ -129,11 +136,10 @@ grid = Draw.MolsToGridImage(mols, molsPerRow=2, subImgSize=(220, 180),
 gax = fig.add_subplot(gs[0, 1])
 gax.imshow(grid)
 gax.axis("off")
-gax.set_title("Top Murcko scaffolds (N highlighted)", fontsize=12)
 
 fig.tight_layout()
 out = os.path.join(BASE, "umap_gemini_scaffold_N_gt50.png")
-fig.savefig(out, dpi=150)
+fig.savefig(out)
 print("Saved:", out)
 
 print("\nTop N-containing Murcko scaffolds:")
