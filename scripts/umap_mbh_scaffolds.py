@@ -98,8 +98,8 @@ def color_for(s):
 
 # Apply the shared, thesis-quality theme used by all other figures in the repo.
 set_publication_style()
-# Single-panel plot focusing entirely on the high-density UMAP with embedded molecules
-fig, ax = plt.subplots(figsize=(12, 11))
+# Single-panel plot with the scaffold gallery embedded directly as an in-plot card on the right
+fig, ax = plt.subplots(figsize=(13, 11))
 
 markers = {"baseline": "o", "neutral": "^"}
 for cls in ["baseline", "neutral"]:
@@ -112,60 +112,25 @@ for cls in ["baseline", "neutral"]:
 ax.set_xlabel("UMAP-1")
 ax.set_ylabel("UMAP-2")
 
-# Embed scaffold molecule drawings directly inside the plot's open spaces.
-# To prevent crowding and overlapping, we only annotate the single most dominant
-# scaffold representing each of the 4 major, physically separated UMAP clusters:
-#   - #1 (bottom-left pyrrolizidine cluster)
-#   - #2 (top-left indolizidine cluster; handles #3/#8 as well)
-#   - #4 (top-right quinuclidine cluster; handles #7 as well)
-#   - #5 (center-right azabicyclic cluster; handles #6 as well)
-# The boxes are positioned outwards in a clean, balanced X-shape.
-CHOSEN_SCAFFOLDS = [top_scaffolds[0], top_scaffolds[1], top_scaffolds[3], top_scaffolds[4]]
-OFFSETS = {
-    top_scaffolds[0]: (-115, -75), # #1 (pyrrolizidine bottom-left) -> down-left
-    top_scaffolds[1]: (-115, 65),  # #2 (indolizidine top-left)     -> up-left
-    top_scaffolds[3]: (100, 75),   # #4 (quinuclidine top-right)    -> up-right
-    top_scaffolds[4]: (100, -75),  # #5 (fused center-right)        -> down-right
-}
+# Generate the 8-scaffold grid image with highlighted Nitrogens
+mols = [Chem.MolFromSmiles(s) for s in top_scaffolds]
+highlights = [[a.GetIdx() for a in m.GetAtoms() if m and a.GetSymbol() == "N"] for m in mols]
+legends = [f"#{i+1} n={counts[s]}" for i, s in enumerate(top_scaffolds)]
+grid = Draw.MolsToGridImage(mols, molsPerRow=2, subImgSize=(160, 130),
+                            legends=legends, highlightAtomLists=highlights)
 
-for s in CHOSEN_SCAFFOLDS:
-    i = top_scaffolds.index(s)
-    sub_scaf = data[data.scaffold == s]
-    centroid_x = sub_scaf["x"].mean()
-    centroid_y = sub_scaf["y"].mean()
-    
-    # Draw scaffold and highlight the bridgehead Nitrogen atom
-    m = Chem.MolFromSmiles(s)
-    highlight = [a.GetIdx() for a in m.GetAtoms() if a.GetSymbol() == "N"]
-    img = Draw.MolToImage(m, size=(100, 80), highlightAtoms=highlight, highlightColor=(0.85, 0.15, 0.15, 0.35))
-    
-    # Create matplotlib imagebox
-    from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-    imagebox = OffsetImage(img, zoom=0.7)
-    
-    # Place on plot with an arrow pointing to the cluster centroid
-    offset = OFFSETS[s]
-    ab = AnnotationBbox(
-        imagebox,
-        (centroid_x, centroid_y),
-        xybox=offset,
-        xycoords="data",
-        boxcoords="offset points",
-        arrowprops=dict(arrowstyle="->", color="#7f8c8d", lw=1.2, alpha=0.7),
-        bboxprops=dict(edgecolor=scaf_color[s], lw=1.5, facecolor="white", alpha=0.9, boxstyle="round,pad=0.15")
-    )
-    ax.add_artist(ab)
-    
-    # Label the box with its matching scaffold rank (#1, #2, #4, #5)
-    # Position text slightly above/left of the image box
-    tx = centroid_x
-    ty = centroid_y
-    ax.annotate(f"#{i+1}", xy=(tx, ty), xytext=(offset[0] - 40, offset[1] + 32),
-                textcoords="offset points", fontsize=10, weight="bold", color="#2c3e50")
+# Embed the scaffold grid image directly inside the plot's wide empty space on the right,
+# using the exact user-specified coordinates: UMAP-1 in [12, 30] and UMAP-2 in [-2.5, 8].
+# Draw a clean border box (white face, light grey edge) to house the card
+rect = plt.Rectangle((12, -2.5), 18, 10.5, facecolor="white", edgecolor="#bdc3c7", lw=1.5, zorder=2)
+ax.add_patch(rect)
 
-# Expand axis limits to comfortably fit the annotated boxes without clipping
-ax.set_xlim(data.x.min() - 5.5, data.x.max() + 5.5)
-ax.set_ylim(data.y.min() - 4.5, data.y.max() + 4.5)
+# Render the image inside the border box (slightly padded to show the border)
+ax.imshow(grid, extent=[12.2, 29.8, -2.3, 7.8], aspect="auto", zorder=3)
+
+# Expand axis limits to comfortably fit both the UMAP scatter on the left and the card on the right
+ax.set_xlim(-15.0, 31.0)
+ax.set_ylim(-3.5, 14.5)
 
 legend_items = [Line2D([0], [0], marker="o", color="w",
                        markerfacecolor=scaf_color[s], markeredgecolor="black",
