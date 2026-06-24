@@ -112,21 +112,27 @@ for cls in ["baseline", "neutral"]:
 ax.set_xlabel("UMAP-1")
 ax.set_ylabel("UMAP-2")
 
-# Generate the 8-scaffold grid image with highlighted Nitrogens
+# Generate the 8-scaffold grid image with highlighted Nitrogens.
+# We set molsPerRow=3 (a 3x3 layout for 8 molecules) which fits the wider card aspect ratio
+# beautifully, using larger subImgSize for high-quality, crisp rendering.
 mols = [Chem.MolFromSmiles(s) for s in top_scaffolds]
 highlights = [[a.GetIdx() for a in m.GetAtoms() if m and a.GetSymbol() == "N"] for m in mols]
 legends = [f"#{i+1} n={counts[s]}" for i, s in enumerate(top_scaffolds)]
-grid = Draw.MolsToGridImage(mols, molsPerRow=2, subImgSize=(160, 130),
+grid = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(180, 150),
                             legends=legends, highlightAtomLists=highlights)
 
 # Embed the scaffold grid image directly inside the plot's wide empty space on the right,
 # using the exact user-specified coordinates: UMAP-1 in [12, 30] and UMAP-2 in [-2.5, 8].
-# Draw a clean border box (white face, light grey edge) to house the card
+# Draw a clean white card with a subtle border to house the gallery
 rect = plt.Rectangle((12, -2.5), 18, 10.5, facecolor="white", edgecolor="#bdc3c7", lw=1.5, zorder=2)
 ax.add_patch(rect)
 
-# Render the image inside the border box (slightly padded to show the border)
-ax.imshow(grid, extent=[12.2, 29.8, -2.3, 7.8], aspect="auto", zorder=3)
+# Use an inset axes mapped directly to the data coordinate space. Matplotlib's inset axes
+# with aspect='equal' guarantees that the RDKit image's aspect ratio is preserved perfectly,
+# completely eliminating any stretching or distortion of bonds and rings.
+ax_ins = ax.inset_axes([12, -2.5, 18, 10.5], transform=ax.transData, zorder=3)
+ax_ins.imshow(grid, aspect="equal")
+ax_ins.axis("off")
 
 # Expand axis limits to comfortably fit both the UMAP scatter on the left and the card on the right
 ax.set_xlim(-15.0, 31.0)
