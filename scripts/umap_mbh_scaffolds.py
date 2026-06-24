@@ -98,6 +98,7 @@ def color_for(s):
 
 # Apply the shared, thesis-quality theme used by all other figures in the repo.
 set_publication_style()
+# Single-panel plot focusing entirely on the high-density UMAP with embedded molecules
 fig, ax = plt.subplots(figsize=(12, 11))
 
 markers = {"baseline": "o", "neutral": "^"}
@@ -111,20 +112,24 @@ for cls in ["baseline", "neutral"]:
 ax.set_xlabel("UMAP-1")
 ax.set_ylabel("UMAP-2")
 
-# Embed scaffold molecule drawings directly inside the plot's open spaces
-# with lines pointing to their cluster centroids.
-OFFSETS = [
-    (-100, -50), # #1 (pyrrolizidine bottom-left)
-    (-40, 70),   # #2 (indolizidine top-left)
-    (-100, 30),  # #3 (cyclobutane fused top-left)
-    (50, 80),    # #4 (quinuclidine top-right)
-    (90, -45),   # #5 (fused azabicyclic center-right)
-    (95, 45),    # #6 (fused azabicyclic variant)
-    (95, 0),     # #7 (bridged azabicyclic far-right)
-    (-100, -10), # #8 (fused azabicyclic left)
-]
+# Embed scaffold molecule drawings directly inside the plot's open spaces.
+# To prevent crowding and overlapping, we only annotate the single most dominant
+# scaffold representing each of the 4 major, physically separated UMAP clusters:
+#   - #1 (bottom-left pyrrolizidine cluster)
+#   - #2 (top-left indolizidine cluster; handles #3/#8 as well)
+#   - #4 (top-right quinuclidine cluster; handles #7 as well)
+#   - #5 (center-right azabicyclic cluster; handles #6 as well)
+# The boxes are positioned outwards in a clean, balanced X-shape.
+CHOSEN_SCAFFOLDS = [top_scaffolds[0], top_scaffolds[1], top_scaffolds[3], top_scaffolds[4]]
+OFFSETS = {
+    top_scaffolds[0]: (-115, -75), # #1 (pyrrolizidine bottom-left) -> down-left
+    top_scaffolds[1]: (-115, 65),  # #2 (indolizidine top-left)     -> up-left
+    top_scaffolds[3]: (100, 75),   # #4 (quinuclidine top-right)    -> up-right
+    top_scaffolds[4]: (100, -75),  # #5 (fused center-right)        -> down-right
+}
 
-for i, s in enumerate(top_scaffolds):
+for s in CHOSEN_SCAFFOLDS:
+    i = top_scaffolds.index(s)
     sub_scaf = data[data.scaffold == s]
     centroid_x = sub_scaf["x"].mean()
     centroid_y = sub_scaf["y"].mean()
@@ -136,13 +141,14 @@ for i, s in enumerate(top_scaffolds):
     
     # Create matplotlib imagebox
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-    imagebox = OffsetImage(img, zoom=0.75)
+    imagebox = OffsetImage(img, zoom=0.7)
     
     # Place on plot with an arrow pointing to the cluster centroid
+    offset = OFFSETS[s]
     ab = AnnotationBbox(
         imagebox,
         (centroid_x, centroid_y),
-        xybox=OFFSETS[i],
+        xybox=offset,
         xycoords="data",
         boxcoords="offset points",
         arrowprops=dict(arrowstyle="->", color="#7f8c8d", lw=1.2, alpha=0.7),
@@ -150,16 +156,16 @@ for i, s in enumerate(top_scaffolds):
     )
     ax.add_artist(ab)
     
-    # Label the box with its matching scaffold rank
+    # Label the box with its matching scaffold rank (#1, #2, #4, #5)
     # Position text slightly above/left of the image box
     tx = centroid_x
     ty = centroid_y
-    ax.annotate(f"#{i+1}", xy=(tx, ty), xytext=(OFFSETS[i][0] - 40, OFFSETS[i][1] + 35),
+    ax.annotate(f"#{i+1}", xy=(tx, ty), xytext=(offset[0] - 40, offset[1] + 32),
                 textcoords="offset points", fontsize=10, weight="bold", color="#2c3e50")
 
-# Expand axis limits to comfortably fit the annotated boxes
-ax.set_xlim(data.x.min() - 4.5, data.x.max() + 4.5)
-ax.set_ylim(data.y.min() - 3.5, data.y.max() + 3.5)
+# Expand axis limits to comfortably fit the annotated boxes without clipping
+ax.set_xlim(data.x.min() - 5.5, data.x.max() + 5.5)
+ax.set_ylim(data.y.min() - 4.5, data.y.max() + 4.5)
 
 legend_items = [Line2D([0], [0], marker="o", color="w",
                        markerfacecolor=scaf_color[s], markeredgecolor="black",
