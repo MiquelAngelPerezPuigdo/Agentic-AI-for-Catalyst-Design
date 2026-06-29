@@ -13,17 +13,18 @@ AVAILABLE_ABLATION_MODES = ["A", "B", "C", "D", "E", "F"]
 START_YIELD = 37.0
 
 STYLE_CONFIGS = {
-    "A": {"color": "#4285F4", "label": "A (Baseline / Shuffled SMILES)", "marker": "o"},
-    "B": {"color": "#D97757", "label": "B (-SAR Ladder)", "marker": "s"},
-    "C": {"color": "#9b59b6", "label": "C (-SMILES Shuffle)", "marker": "d"},
-    "D": {"color": "#f1c40f", "label": "D (-Mechanism)", "marker": "<"},
-    "E": {"color": "#e67e22", "label": "E (-Chemical Info / Blackout)", "marker": ">"},
-    "F": {"color": "#E74C3C", "label": "F (Full Ablation / All Combined)", "marker": "x"},
+    "A": {"color": "#0072B2", "label": "A (Baseline / Shuffled SMILES)", "marker": "o"},
+    "B": {"color": "#D55E00", "label": "B (-SAR Ladder)", "marker": "s"},
+    "C": {"color": "#CC79A7", "label": "C (-SMILES Shuffle)", "marker": "d"},
+    "D": {"color": "#F0E442", "label": "D (-Mechanism)", "marker": "<"},
+    "E": {"color": "#009E73", "label": "E (-Chemical Info / Blackout)", "marker": ">"},
+    "F": {"color": "#56B4E9", "label": "F (Full Ablation / All Combined)", "marker": "x"},
     # Real-World Constrained Campaigns
-    "batch": {"color": "#16a085", "label": "Batch (6 x 7 high-throughput)", "marker": "P"},
-    "divergent": {"color": "#8e44ad", "label": "Divergent synthesis", "marker": "*"},
-    "click": {"color": "#2c3e50", "label": "Click Library", "marker": "h"},
-    "click_agnostic": {"color": "#95a5a6", "label": "Click Library (chem. agnostic)", "marker": "v"},
+    "batch": {"color": "#E69F00", "label": "Batch (6 x 7 high-throughput)", "marker": "P"},
+    "divergent": {"color": "#994455", "label": "Divergent Synthesis", "marker": "*"},
+    "click": {"color": "#000000", "label": "Click Library", "marker": "h"},
+    "click_agnostic": {"color": "#999999", "label": "Click Library (Chem. Agnostic)", "marker": "v"},
+    "click_random": {"color": "#6A3D9A", "label": "Click Library (Random Baseline)", "marker": "D"},
 }
 
 
@@ -136,12 +137,12 @@ def plot_constrained_comparison(model_name="google/gemini-3.5-flash", output_pat
     if output_path is None:
         output_path = out_path("constrained", "generative_active_learning_constrained_comparison.png")
 
-    labels = ["batch", "divergent", "click", "click_agnostic"]
+    labels = ["batch", "divergent", "click", "click_agnostic", "click_random"]
     # Molecules proposed/synthesized per optimization step for each campaign. The batch campaign
     # synthesizes 6 molecules/step (6x7), the others 3/step (3x14); plotting against cumulative
     # molecules synthesized puts every campaign on the same 42-reaction budget axis so the 6x7
     # batch run advances 2x faster (6 vs 3) and ends at the same x as the 3x14 runs.
-    PROPOSALS_PER_STEP = {"batch": 6, "divergent": 3, "click": 3, "click_agnostic": 3}
+    PROPOSALS_PER_STEP = {"batch": 6, "divergent": 3, "click": 3, "click_agnostic": 3, "click_random": 3}
     plt.rcParams.update(PUB_RCPARAMS)
     fig, ax = plt.subplots(figsize=(9, 6.2))
 
@@ -205,18 +206,18 @@ def plot_constrained_comparison(model_name="google/gemini-3.5-flash", output_pat
     click_yields = get_click_library_yields()
     if click_yields is not None and len(click_yields):
         click_color = STYLE_CONFIGS["click"]["color"]
-        axin = ax.inset_axes([0.74, 0.30, 0.22, 0.50])  # [x0, y0, w, h] in axes fraction
-        bins = np.arange(30, 93, 5)
+        axin = ax.inset_axes([0.74, 0.34, 0.22, 0.36])  # [x0, y0, w, h] in axes fraction
+        bins = np.arange(0, 93, 5)
         axin.hist(click_yields, bins=bins, orientation="horizontal",
                   color=click_color, alpha=0.55, edgecolor="white", linewidth=0.5)
         axin.axhline(89.0, color="#c0392b", linestyle=":", linewidth=1.4)
         axin.axhline(float(np.median(click_yields)), color="#444444",
                      linestyle="--", linewidth=1.2)
-        axin.set_ylim(30, 92)
-        axin.set_xlabel("Count", fontsize=9, labelpad=2)
-        axin.set_ylabel("Library yield (%)", fontsize=9, labelpad=2)
-        axin.tick_params(labelsize=8)
-        axin.set_yticks(range(30, 91, 20))
+        axin.set_ylim(0, 92)
+        axin.set_xlabel("Count", fontsize=11, labelpad=2)
+        axin.set_ylabel("Library yield (%)", fontsize=11, labelpad=2)
+        axin.tick_params(labelsize=10)
+        axin.set_yticks(range(0, 91, 20))
         axin.spines["top"].set_visible(False)
         axin.spines["right"].set_visible(False)
         axin.set_facecolor("white")
@@ -270,6 +271,106 @@ def run_constrained_experiment(model="google/gemini-3.5-flash", campaigns=5, ste
         except Exception as e:
             print(f"[!] Warning: Failed to summarize divergent audit: {e}")
 
+    return output_path
+
+
+def run_click_random_campaign(campaign_id, surrogate, fp_gen, dataset_dict, total_iterations=14, save_details=False, num_proposals=3):
+    """Random baseline for the SDL click library: choose random (alkyne, azide) pairs without replacement."""
+    import random
+    from src.click_library import get_library
+    from src.surrogate import score_ligand
+
+    lib = get_library()
+    product_map = lib["product_map"]
+    all_pairs = list(product_map.keys())
+
+    print(f"[RANDOM BASELINE] Campaign {campaign_id}: selecting {num_proposals} random pairs per step for {total_iterations} steps...")
+
+    tried_pairs = set()
+    max_yield_history = []
+    current_global_max = 0.0
+    campaign_logs = []
+
+    for iteration in range(1, total_iterations + 1):
+        remaining = [p for p in all_pairs if p not in tried_pairs]
+        if not remaining:
+            remaining = []
+        selected = random.sample(remaining, min(num_proposals, len(remaining))) if remaining else []
+
+        step_yields = []
+        scored_details = []
+        for (ai, zi) in selected:
+            smiles = product_map[(ai, zi)]
+            chosen_yield, stored = score_ligand(smiles, surrogate, fp_gen, dataset_dict, [])
+            tried_pairs.add((ai, zi))
+            step_yields.append(chosen_yield)
+            scored_details.append({"alkyne": ai, "azide": zi, "product_smiles": smiles, "yield": chosen_yield})
+
+        step_max = max(step_yields) if step_yields else current_global_max
+        if step_max > current_global_max:
+            current_global_max = step_max
+        max_yield_history.append(current_global_max)
+
+        if save_details:
+            campaign_logs.append({
+                "step": iteration,
+                "proposals": scored_details,
+                "step_max_yield": step_max,
+                "global_max_yield": current_global_max,
+            })
+
+        print(f"[RANDOM BASELINE] Step {iteration}/{total_iterations} complete. Max yield: {current_global_max:.1f}%")
+
+        if current_global_max >= 89.0:
+            remaining_steps = total_iterations - len(max_yield_history)
+            if remaining_steps > 0:
+                max_yield_history.extend([current_global_max] * remaining_steps)
+            break
+
+    if save_details:
+        path = out_path("campaign_details", f"campaign_details_click_random_campaign_{campaign_id}.json")
+        try:
+            with open(path, "w") as f:
+                json.dump(campaign_logs, f, indent=4)
+            print(f"[+] Detailed random click baseline campaign logs saved to '{path}'.")
+        except Exception as e:
+            print(f"[!] Warning: Failed to save random click baseline campaign log: {e}")
+
+    return max_yield_history
+
+
+def run_click_random_experiment(model="google/gemini-3.5-flash", campaigns=5, steps=14, save_details=False, num_proposals=3):
+    """Run a random search baseline for the SDL click library."""
+    import concurrent.futures
+    import random
+    os.makedirs("output", exist_ok=True)
+
+    print(f"\n==================== RUNNING RANDOM CLICK LIBRARY BASELINE FOR {model} ====================")
+    try:
+        from src.surrogate import init_surrogate
+        surrogate, fp_gen, dataset_dict = init_surrogate()
+    except Exception as e:
+        print(f"[!] Error initializing surrogate: {e}")
+        return None
+
+    runs = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=campaigns) as ex:
+        futs = {ex.submit(run_click_random_campaign, i, surrogate, fp_gen, dataset_dict,
+                          total_iterations=steps, save_details=save_details, num_proposals=num_proposals): i
+                for i in range(1, campaigns + 1)}
+        for fut in concurrent.futures.as_completed(futs):
+            cid = futs[fut]
+            try:
+                res = fut.result()
+                if res:
+                    runs.append(res)
+            except Exception as e:
+                print(f">> [Failure] RANDOM BASELINE campaign {cid} crashed: {e}")
+
+    with open(out_path("constrained", "ablation_results_click_random.json"), "w") as f:
+        json.dump(runs, f)
+
+    output_path = plot_constrained_comparison(model_name=model)
     return output_path
 
 

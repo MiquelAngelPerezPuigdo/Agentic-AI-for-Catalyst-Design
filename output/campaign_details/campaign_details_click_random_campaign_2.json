@@ -1,0 +1,352 @@
+[
+    {
+        "step": 1,
+        "proposals": [
+            {
+                "alkyne": 11,
+                "azide": 16,
+                "product_smiles": "O=[N+]([O-])c1ccc(O)nc1-c1cn(Cc2c3ccccc3cc3ccccc23)nn1",
+                "yield": 43.038773799186075
+            },
+            {
+                "alkyne": 6,
+                "azide": 4,
+                "product_smiles": "CCCCCCCCCCCCCn1cc(-c2nc(O)c(OC)cc2Cl)nn1",
+                "yield": 67.35920844151417
+            },
+            {
+                "alkyne": 12,
+                "azide": 13,
+                "product_smiles": "O=[N+]([O-])c1ccc(Cn2cc(-c3nc(O)ccc3C(F)(F)F)nn2)cc1",
+                "yield": 75.39179854405307
+            }
+        ],
+        "step_max_yield": 75.39179854405307,
+        "global_max_yield": 75.39179854405307
+    },
+    {
+        "step": 2,
+        "proposals": [
+            {
+                "alkyne": 16,
+                "azide": 16,
+                "product_smiles": "Oc1nc(-c2cn(Cc3c4ccccc4cc4ccccc34)nn2)ccc1C(F)(F)F",
+                "yield": 45.67470007367003
+            },
+            {
+                "alkyne": 7,
+                "azide": 17,
+                "product_smiles": "COc1cc(OC)cc(-c2cc(OC)c(O)nc2-c2cn(C3c4ccccc4-c4ccccc43)nn2)c1",
+                "yield": 60.838563541821266
+            },
+            {
+                "alkyne": 0,
+                "azide": 3,
+                "product_smiles": "CC(c1ccccc1)n1cc(C(C)(C)c2cccc(O)n2)nn1",
+                "yield": 20.654362205552967
+            }
+        ],
+        "step_max_yield": 60.838563541821266,
+        "global_max_yield": 75.39179854405307
+    },
+    {
+        "step": 3,
+        "proposals": [
+            {
+                "alkyne": 10,
+                "azide": 17,
+                "product_smiles": "Cc1cn(-c2ccc(-c3cn(C4c5ccccc5-c5ccccc54)nn3)nc2O)cn1",
+                "yield": 13.850073283331534
+            },
+            {
+                "alkyne": 2,
+                "azide": 14,
+                "product_smiles": "COc1cc(-c2cc(C(F)(F)F)cc(C(F)(F)F)c2)c(-c2cn(C(c3ccccc3)c3ccccc3)nn2)nc1O",
+                "yield": 67.43322197317997
+            },
+            {
+                "alkyne": 10,
+                "azide": 6,
+                "product_smiles": "Cc1ccc(S(=O)(=O)n2cc(-c3ccc(-n4cnc(C)c4)c(O)n3)nn2)cc1",
+                "yield": 0.0
+            }
+        ],
+        "step_max_yield": 67.43322197317997,
+        "global_max_yield": 75.39179854405307
+    },
+    {
+        "step": 4,
+        "proposals": [
+            {
+                "alkyne": 1,
+                "azide": 6,
+                "product_smiles": "COc1cc(-c2cc(C(C)(C)C)cc(C(C)(C)C)c2)c(-c2cn(S(=O)(=O)c3ccc(C)cc3)nn2)nc1O",
+                "yield": 42.69168558207791
+            },
+            {
+                "alkyne": 6,
+                "azide": 11,
+                "product_smiles": "COc1cc(Cl)c(-c2cn(Cc3c(F)c(F)c(F)c(F)c3F)nn2)nc1O",
+                "yield": 67.56969023098415
+            },
+            {
+                "alkyne": 8,
+                "azide": 8,
+                "product_smiles": "COc1ccc(-c2cn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)nn2)nc1O",
+                "yield": 52.155050197764496
+            }
+        ],
+        "step_max_yield": 67.56969023098415,
+        "global_max_yield": 75.39179854405307
+    },
+    {
+        "step": 5,
+        "proposals": [
+            {
+                "alkyne": 10,
+                "azide": 14,
+                "product_smiles": "Cc1cn(-c2ccc(-c3cn(C(c4ccccc4)c4ccccc4)nn3)nc2O)cn1",
+                "yield": 14.514588395915439
+            },
+            {
+                "alkyne": 4,
+                "azide": 14,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(C(c3ccccc3)c3ccccc3)nn2)nc1O",
+                "yield": 69.86971467333045
+            },
+            {
+                "alkyne": 11,
+                "azide": 0,
+                "product_smiles": "O=[N+]([O-])c1ccc(O)nc1-c1cn(CC2C3CC4CC(C3)CC2C4)nn1",
+                "yield": 46.18875220704305
+            }
+        ],
+        "step_max_yield": 69.86971467333045,
+        "global_max_yield": 75.39179854405307
+    },
+    {
+        "step": 6,
+        "proposals": [
+            {
+                "alkyne": 16,
+                "azide": 11,
+                "product_smiles": "Oc1nc(-c2cn(Cc3c(F)c(F)c(F)c(F)c3F)nn2)ccc1C(F)(F)F",
+                "yield": 46.662456362620375
+            },
+            {
+                "alkyne": 6,
+                "azide": 9,
+                "product_smiles": "COc1cc(Cl)c(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)nc1O",
+                "yield": 75.91597948595717
+            },
+            {
+                "alkyne": 9,
+                "azide": 12,
+                "product_smiles": "Cc1cc(C(F)(F)F)c(-c2cn(Cc3c(F)cccc3F)nn2)nc1O",
+                "yield": 57.70259243975499
+            }
+        ],
+        "step_max_yield": 75.91597948595717,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 7,
+        "proposals": [
+            {
+                "alkyne": 1,
+                "azide": 17,
+                "product_smiles": "COc1cc(-c2cc(C(C)(C)C)cc(C(C)(C)C)c2)c(-c2cn(C3c4ccccc4-c4ccccc43)nn2)nc1O",
+                "yield": 57.97028857005671
+            },
+            {
+                "alkyne": 6,
+                "azide": 5,
+                "product_smiles": "COc1cc(Cn2cc(-c3nc(O)c(OC)cc3Cl)nn2)cc(OC)c1",
+                "yield": 61.386594593011054
+            },
+            {
+                "alkyne": 17,
+                "azide": 2,
+                "product_smiles": "CC(C)(C)c1cc(Cn2cc(-c3ccc(Cl)c(O)n3)nn2)cc(C(C)(C)C)c1",
+                "yield": 51.28686270826276
+            }
+        ],
+        "step_max_yield": 61.386594593011054,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 8,
+        "proposals": [
+            {
+                "alkyne": 17,
+                "azide": 1,
+                "product_smiles": "Oc1nc(-c2cn(CC3CCCCC3)nn2)ccc1Cl",
+                "yield": 50.60539038227356
+            },
+            {
+                "alkyne": 16,
+                "azide": 5,
+                "product_smiles": "COc1cc(Cn2cc(-c3ccc(C(F)(F)F)c(O)n3)nn2)cc(OC)c1",
+                "yield": 41.2308724897278
+            },
+            {
+                "alkyne": 8,
+                "azide": 0,
+                "product_smiles": "COc1ccc(-c2cn(CC3C4CC5CC(C4)CC3C5)nn2)nc1O",
+                "yield": 50.2500359015889
+            }
+        ],
+        "step_max_yield": 50.60539038227356,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 9,
+        "proposals": [
+            {
+                "alkyne": 13,
+                "azide": 1,
+                "product_smiles": "Oc1cccc(-c2cn(CC3CCCCC3)nn2)n1",
+                "yield": 37.0
+            },
+            {
+                "alkyne": 1,
+                "azide": 16,
+                "product_smiles": "COc1cc(-c2cc(C(C)(C)C)cc(C(C)(C)C)c2)c(-c2cn(Cc3c4ccccc4cc4ccccc34)nn2)nc1O",
+                "yield": 57.28272943680073
+            },
+            {
+                "alkyne": 11,
+                "azide": 17,
+                "product_smiles": "O=[N+]([O-])c1ccc(O)nc1-c1cn(C2c3ccccc3-c3ccccc32)nn1",
+                "yield": 44.144703430488846
+            }
+        ],
+        "step_max_yield": 57.28272943680073,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 10,
+        "proposals": [
+            {
+                "alkyne": 3,
+                "azide": 9,
+                "product_smiles": "COc1cc(-c2ccccc2)c(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)nc1O",
+                "yield": 70.95263574232413
+            },
+            {
+                "alkyne": 16,
+                "azide": 9,
+                "product_smiles": "Oc1nc(-c2cn(Cc3ccc(C(F)(F)F)cc3C(F)(F)F)nn2)ccc1C(F)(F)F",
+                "yield": 50.229259929741616
+            },
+            {
+                "alkyne": 8,
+                "azide": 4,
+                "product_smiles": "CCCCCCCCCCCCCn1cc(-c2ccc(OC)c(O)n2)nn1",
+                "yield": 45.492493917840314
+            }
+        ],
+        "step_max_yield": 70.95263574232413,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 11,
+        "proposals": [
+            {
+                "alkyne": 9,
+                "azide": 5,
+                "product_smiles": "COc1cc(Cn2cc(-c3nc(O)c(C)cc3C(F)(F)F)nn2)cc(OC)c1",
+                "yield": 57.103255623829334
+            },
+            {
+                "alkyne": 15,
+                "azide": 13,
+                "product_smiles": "O=[N+]([O-])c1ccc(Cn2cc(-c3nc(O)c(F)cc3F)nn2)cc1",
+                "yield": 45.05984796376792
+            },
+            {
+                "alkyne": 6,
+                "azide": 0,
+                "product_smiles": "COc1cc(Cl)c(-c2cn(CC3C4CC5CC(C4)CC3C5)nn2)nc1O",
+                "yield": 71.63675042526276
+            }
+        ],
+        "step_max_yield": 71.63675042526276,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 12,
+        "proposals": [
+            {
+                "alkyne": 0,
+                "azide": 10,
+                "product_smiles": "CC(C)(c1cn(Cc2ccc(C(F)(F)F)cc2)nn1)c1cccc(O)n1",
+                "yield": 25.754500984182663
+            },
+            {
+                "alkyne": 3,
+                "azide": 8,
+                "product_smiles": "COc1cc(-c2ccccc2)c(-c2cn(Cc3cc(C(F)(F)F)cc(C(F)(F)F)c3)nn2)nc1O",
+                "yield": 71.93946500888094
+            },
+            {
+                "alkyne": 11,
+                "azide": 9,
+                "product_smiles": "O=[N+]([O-])c1ccc(O)nc1-c1cn(Cc2ccc(C(F)(F)F)cc2C(F)(F)F)nn1",
+                "yield": 50.97093723666181
+            }
+        ],
+        "step_max_yield": 71.93946500888094,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 13,
+        "proposals": [
+            {
+                "alkyne": 17,
+                "azide": 0,
+                "product_smiles": "Oc1nc(-c2cn(CC3C4CC5CC(C4)CC3C5)nn2)ccc1Cl",
+                "yield": 49.90244681178993
+            },
+            {
+                "alkyne": 4,
+                "azide": 0,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(CC3C4CC5CC(C4)CC3C5)nn2)nc1O",
+                "yield": 72.44007631599933
+            },
+            {
+                "alkyne": 4,
+                "azide": 1,
+                "product_smiles": "COc1cc(C(F)(F)F)c(-c2cn(CC3CCCCC3)nn2)nc1O",
+                "yield": 72.89701988648297
+            }
+        ],
+        "step_max_yield": 72.89701988648297,
+        "global_max_yield": 75.91597948595717
+    },
+    {
+        "step": 14,
+        "proposals": [
+            {
+                "alkyne": 14,
+                "azide": 3,
+                "product_smiles": "CC(c1ccccc1)n1cc(-c2nc(O)c(Cl)cc2Cl)nn1",
+                "yield": 43.11396117697355
+            },
+            {
+                "alkyne": 16,
+                "azide": 10,
+                "product_smiles": "Oc1nc(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)ccc1C(F)(F)F",
+                "yield": 58.12557334412575
+            },
+            {
+                "alkyne": 14,
+                "azide": 10,
+                "product_smiles": "Oc1nc(-c2cn(Cc3ccc(C(F)(F)F)cc3)nn2)c(Cl)cc1Cl",
+                "yield": 47.62869579340361
+            }
+        ],
+        "step_max_yield": 58.12557334412575,
+        "global_max_yield": 75.91597948595717
+    }
+]

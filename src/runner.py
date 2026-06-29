@@ -9,12 +9,12 @@ try:
     from config import USE_PROMPT_CACHING
 except ImportError:
     USE_PROMPT_CACHING = False
-# --- ADDED FOR BENCHMARK 2: LIGAND RANKING ---
+# --- BENCHMARK 2: LIGAND RANKING ---------------------------------------------
 from src.ligand_data import RANKING_TASKS
 from src.prompts import PROMPTS_TEXT_MODE, PROMPTS_JSON_MODE, SYSTEM_PROMPT_JSON, ALL_LEVEL_KEYS
 from src.evaluation import extract_scores_text, extract_scores_json, calculate_top_5_overlap
 import json
-# --- ADDED FOR PROSPECTIVE CASE ---
+# --- PROSPECTIVE ACTIVE LEARNING ---------------------------------------------
 import re
 from src.ligand_data import INITIAL_SEED
 from src.paths import out_path
@@ -160,8 +160,7 @@ def process_ligand_task(model, task_key, level_name, iteration, task_data):
             user_prompt = full_prompt
             system_prompt = "You are an expert computational chemist."
 
-    # 2. Call the OpenRouter API (Reusing your clean API function!)
-    # Note: We pass the system_prompt here, which requires a slight update to api.py later.
+    # Call the API with system-prompt routing support
     response = call_openrouter(model, user_prompt, system_prompt=system_prompt)
     if response in ["API_RETURNED_NULL", "API_ERROR"] or not response: 
         return None

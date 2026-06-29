@@ -129,15 +129,14 @@ def call_openrouter(model, text_prompt, system_prompt=None, temperature=0.2):
 
     headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
     
-    # 1. Dynamically build the message list (adds Anthropic cache_control breakpoints
-    #    on the large static blocks when prompt caching is enabled).
+    # Build the message list (adds Anthropic cache_control breakpoints on the large static blocks when caching is enabled).
     messages = _build_cached_messages(model, text_prompt, system_prompt)
 
     data = {
         "model": model,
         "messages": messages,
         "temperature": temperature,
-        "max_tokens": 8000 # CRITICAL: Added high token limit for long Benchmark 2 outputs
+        "max_tokens": 8000  # Enforce high limit for full prompt responses
     }
     
     max_retries = 5
@@ -157,7 +156,6 @@ def call_openrouter(model, text_prompt, system_prompt=None, temperature=0.2):
                 time.sleep(base_delay * (2 ** attempt))
                 continue 
                 
-            # 3. Added safe extraction from your dirty notebook logic
             content = response_json['choices'][0]['message'].get('content')
             if content is None: return "API_RETURNED_NULL"
             return content

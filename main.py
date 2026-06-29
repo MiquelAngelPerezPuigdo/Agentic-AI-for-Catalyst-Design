@@ -26,8 +26,8 @@ def main():
                         help="Number of active learning campaigns (default: 5).")
     parser.add_argument("--steps", type=int, default=14,
                         help="Number of prospective optimization steps / iterations (default: 14).")
-    parser.add_argument("--constraint", choices=["batch", "divergent", "click"], default=None,
-                        help="Run a Real-World Constrained Campaign instead of an ablation (batch=6x7 high-throughput, divergent=shared-scaffold synthesis with RDKit MCS audit, click=SDL combinatorial click-library search over building blocks).")
+    parser.add_argument("--constraint", choices=["batch", "divergent", "click", "click_random"], default=None,
+                        help="Run a Real-World Constrained Campaign instead of an ablation (batch=6x7 high-throughput, divergent=shared-scaffold synthesis with RDKit MCS audit, click=SDL combinatorial click-library search over building blocks, click_random=random click-library baseline).")
     parser.add_argument("--chem-agnostic", action="store_true",
                         help="For --constraint click: strip all reaction context/mechanism from the prompt (analog of Ablation E) to test if chemistry knowledge helps library selection.")
     parser.add_argument("--save-details", action="store_true",
@@ -97,7 +97,7 @@ def main():
         print("Initializing Benchmark 2: Ligand Ranking...")
         print("Extracting contextual paper texts...")
         
-        # Load the text from the PDFs directly into your RANKING_TASKS dictionary
+        # Load the text from the PDFs directly into the RANKING_TASKS dictionary
         for key, task in RANKING_TASKS.items():
             task["related_paper_text"] = "\n".join([extract_pdf_text_clean(Path(p)) for p in task["related_paper_paths"] if Path(p).exists()])
             task["actual_paper_text"] = "\n".join([extract_pdf_text_clean(Path(p)) for p in task["actual_paper_paths"] if Path(p).exists()])
@@ -136,6 +136,17 @@ def main():
                 chem_agnostic=args.chem_agnostic
             )
             print(f"\n{variant} Campaign complete! Plot saved to {output_path}.")
+        elif args.constraint == "click_random":
+            print(f"\nInitializing Click Library Random Baseline Campaign...")
+            from src.ablation import run_click_random_experiment
+
+            output_path = run_click_random_experiment(
+                model=args.model,
+                campaigns=args.campaigns,
+                steps=args.steps,
+                save_details=args.save_details
+            )
+            print(f"\nClick Library Random Baseline complete! Plot saved to {output_path}.")
         elif args.constraint:
             print(f"\nInitializing Real-World Constrained Campaign: '{args.constraint}'...")
             from src.ablation import run_constrained_experiment

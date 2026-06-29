@@ -1,9 +1,11 @@
+import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from config import ALL_MODELS, FRONTIER_MODELS
 import numpy as np
 from src.paths import out_path
+from src.prompts import ALL_LEVEL_KEYS
 
 # --- Shared publication style -------------------------------------------------
 # A single theme applied across all Results figures so the benchmark plots match
@@ -12,6 +14,18 @@ from src.paths import out_path
 PALETTE_CONTEXT = ["#3477eb", "#e8833a"]  # with-context / without-context
 PALETTE_MODELS = ["#3477eb", "#e8833a", "#3aa35a", "#9b59b6", "#e74c3c",
                   "#16a085", "#f1c40f", "#34495e"]
+
+# Premium GPQA / Nature Chemistry style pastel/soft palette (from the reference image)
+PALETTE_PREMIUM = [
+    "#9A95D7",  # Soft Lavender/Purple
+    "#7FBBE3",  # Soft Blue
+    "#76DD9D",  # Soft Mint Green
+    "#FA9F75",  # Soft Peach/Orange
+    "#DE8285",  # Soft Salmon/Pink
+    "#45CBD2",  # Soft Teal
+    "#ED9510",  # Soft Amber/Gold
+    "#9E758F",  # Soft Dusty Rose/Plum
+]
 
 
 def set_publication_style():
@@ -154,12 +168,116 @@ def plot_fair_results(csv_path="output/fair_chemistry_results.csv"):
         fig.savefig(out_path("benchmark1", f"fair_plot_{rxn}.png"))
         plt.close(fig)
     print("[+] Benchmark 1 plots saved to output/benchmark1/.")
+    plot_fair_star_results(csv_path)
 
-# --- ADDED FOR BENCHMARK 2: LIGAND RANKING PLOTS ---
-from src.prompts import ALL_LEVEL_KEYS
+def clean_display_name(name):
+    """Clean and shorten name for clean sub-panel display."""
+    name = name.replace("_", " ")
+    name = name.replace("Morita-Baylis-Hillman", "MBH")
+    name = name.replace("Pd-catalyzed", "Pd-Catalyzed")
+    name = name.replace("Copper-catalyzed", "Cu-Catalyzed")
+    if len(name) > 45:
+        words = name.split(" ")
+        mid = len(words) // 2
+        name = " ".join(words[:mid]) + "\n" + " ".join(words[mid:])
+    return name
+
+def plot_fair_star_results(csv_path="output/fair_chemistry_results.csv"):
+    """Generates and saves a single, extremely beautiful, publication-quality star plot for Benchmark 1.
+
+    Following the GPQA / Nature Chemistry paper style:
+    - 1 single star plot (radar chart).
+    - Spokes correspond to the 8 models (clean regular octagon).
+    - Polygons correspond to the 6 reactions (Without Context scores only).
+    - Grid lines are regular concentric octagons, not circular.
+    - Outer boundary is a clean, dark, bold regular octagon.
+    - Colors are colorblind-safe and modern (Okabe-Ito). No markers, no legends, no titles.
+    """
+    if not os.path.exists(csv_path):
+        print(f"[!] Warning: Star plotting failed. File not found: {csv_path}")
+        return
+
+    df = pd.read_csv(csv_path)
+    if df.empty:
+        return
+
+    model_order = [m.split('/')[-1] for m in ALL_MODELS]
+    present_models = [m for m in model_order if m in df['Model'].unique()]
+    if not present_models:
+        return
+
+    N = len(present_models)
+    if N == 0:
+        return
+
+    reactions = list(df['Reaction'].unique())
+
+    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=dict(polar=True))
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    # Disable default polar grid lines and boundary circles
+    ax.grid(False)
+    ax.spines['polar'].set_visible(False)
+    ax.set_facecolor('none')
+
+    # Draw solid white background inside the regular polygon so it pops beautifully on grey slides/backgrounds
+    ax.fill(angles, [10] * (N + 1), color='#ffffff', zorder=0)
+
+    # Draw regular concentric polygons (grid lines) at 2, 4, 6, 8, 10
+    grid_radii = [2, 4, 6, 8, 10]
+    for r in grid_radii:
+        ax.plot(angles, [r] * (N + 1), color='#e3e3e3', linestyle='-', linewidth=0.8, zorder=1)
+
+    # Draw spokes
+    for angle in angles[:-1]:
+        ax.plot([angle, angle], [0, 10], color='#e3e3e3', linestyle='-', linewidth=0.8, zorder=1)
+
+    # Draw outer dark regular polygon boundary with increased thickness (bold contour)
+    ax.plot(angles, [10] * (N + 1), color='#333333', linewidth=4.5, zorder=2)
+
+    # Hide default ticks and tick labels
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+
+    # Plot the "Without Context" scores for each reaction
+    # Jewel-toned, high-contrast palette to maximize visibility and clarity of overlaps on grey/white
+    PALETTE_JEWEL = [
+        "#00529B",  # Deep Royal Blue
+        "#D81B60",  # Vibrant Rose/Magenta
+        "#00897B",  # Teal Green
+        "#F4511E",  # Rich Amber Orange
+        "#7B1FA2",  # Deep Purple
+        "#43A047",  # Vibrant Forest Green
+    ]
+
+    for idx, rxn in enumerate(reactions):
+        color = PALETTE_JEWEL[idx % len(PALETTE_JEWEL)]
+        rxn_df = df[df['Reaction'] == rxn]
+        values = []
+        for model in present_models:
+            sub = rxn_df[(rxn_df['Model'] == model) & (rxn_df['Context'] == 'Without Context')]
+            val = sub['Score'].mean() if len(sub) > 0 else 0
+            values.append(val if not np.isnan(val) else 0)
+        values += values[:1]
+
+        # Heavy-duty solid outlines with gorgeous, highly readable translucent fills
+        ax.plot(angles, values, color=color, linewidth=4.2, zorder=4)
+        ax.fill(angles, values, color=color, alpha=0.18, zorder=4)
+
+    fig.tight_layout()
+    fig.savefig(out_path("benchmark1", "fair_star_plots_combined.png"), dpi=300, transparent=True)
+    fig.savefig(out_path("benchmark1", "fair_star_plots_combined.svg"), format='svg', transparent=True)
+    plt.close(fig)
+    print("[+] Benchmark 1 combined star plot saved to output/benchmark1/fair_star_plots_combined.png and .svg")
+
+# --- BENCHMARK 2: LIGAND RANKING PLOTS ----------------------------------------
 
 def plot_level_hierarchy(csv_path="output/benchmark2_results.csv"):
-    import os
     if not os.path.exists(csv_path): 
         print(f"[!] Warning: Plotting failed. File not found: {csv_path}")
         return
@@ -227,13 +345,143 @@ def plot_level_hierarchy(csv_path="output/benchmark2_results.csv"):
         # De-duplicate legend (barplot + stripplot would double the handles) and
         # keep only the models actually plotted; place it inside the axes.
         h, l = ax.get_legend_handles_labels()
-        ax.legend(h[:len(task_models)], l[:len(task_models)], title="Model",
-                  loc='best', framealpha=0.9)
-
         sns.despine(ax=ax)
         fig.tight_layout()
         fig.savefig(out_path("benchmark2", f"benchmark2_trend_{task}.png"))
         plt.close(fig)
 
     print("[+] Benchmark 2 plots saved to output/benchmark2/.")
+    plot_level_hierarchy_star(csv_path)
     plt.close()
+
+def format_level_label(label):
+    """Keep only the short 'Level X' part for a clean star plot axis."""
+    return label.split('(')[0].strip()
+
+def plot_level_hierarchy_star(csv_path="output/benchmark2_results.csv"):
+    """Generates and saves a single, extremely beautiful, publication-quality star plot for Benchmark 2.
+
+    Following the GPQA / Nature Chemistry paper style:
+    - 1 single star plot (radar chart).
+    - Spokes correspond to the 6 prompting-complexity levels (Level 1 to Level 6).
+    - Polygons correspond to the 4 ranking tasks.
+    - Tasks are renormalized to a 0--1 fraction so every task shares the same radial scale.
+    - Grid lines are regular concentric hexagons, not circular.
+    - Outer boundary is a clean, dark, bold regular hexagon.
+    - Colors are colorblind-safe and modern (Okabe-Ito). No markers, no legends, no titles.
+    """
+    if not os.path.exists(csv_path):
+        print(f"[!] Warning: Star plotting failed. File not found: {csv_path}")
+        return
+
+    df = pd.read_csv(csv_path)
+    if df.empty:
+        return
+
+    level_order = [lv for lv in ALL_LEVEL_KEYS if lv in set(df['Level'].unique())]
+    if not level_order:
+        return
+
+    categories = level_order
+    N = len(categories)
+    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
+    angles += angles[:1]
+
+    tasks = list(df['Task'].unique())
+
+    fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=dict(polar=True))
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    # Disable default polar grid lines and boundary circles
+    ax.grid(False)
+    ax.spines['polar'].set_visible(False)
+    ax.set_facecolor('none')
+
+    # Draw solid white background inside the regular polygon so it pops beautifully on grey slides/backgrounds
+    ax.fill(angles, [1.0] * (N + 1), color='#ffffff', zorder=0)
+
+    # Draw regular concentric polygons (grid lines) at 0.2, 0.4, 0.6, 0.8, 1.0
+    grid_radii = [0.2, 0.4, 0.6, 0.8, 1.0]
+    for r in grid_radii:
+        ax.plot(angles, [r] * (N + 1), color='#e3e3e3', linestyle='-', linewidth=0.8, zorder=1)
+
+    # Draw spokes
+    for angle in angles[:-1]:
+        ax.plot([angle, angle], [0, 1.0], color='#e3e3e3', linestyle='-', linewidth=0.8, zorder=1)
+
+    # Draw outer dark regular polygon boundary with increased thickness (bold contour)
+    ax.plot(angles, [1.0] * (N + 1), color='#333333', linewidth=4.5, zorder=2)
+
+    # Hide all Level labels completely
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+
+    # Jewel-toned, high-contrast palette to maximize visibility and clarity of overlaps on grey/white
+    PALETTE_JEWEL = [
+        "#00529B",  # Deep Royal Blue
+        "#D81B60",  # Vibrant Rose/Magenta
+        "#00897B",  # Teal Green
+        "#F4511E",  # Rich Amber Orange
+        "#7B1FA2",  # Deep Purple
+        "#43A047",  # Vibrant Forest Green
+    ]
+
+    for idx, task in enumerate(tasks):
+        color = PALETTE_JEWEL[idx % len(PALETTE_JEWEL)]
+        task_df = df[df['Task'] == task]
+        k = int(task_df['Top_K'].iloc[0]) if 'Top_K' in task_df.columns else 5
+        values = []
+        low_values = []
+        high_values = []
+        for lv in categories:
+            sub = task_df[task_df['Level'] == lv]
+            vals = sub['Top_5_Overlap'] if len(sub) > 0 else pd.Series([])
+            mean_val = vals.mean() if len(vals) > 0 else 0
+            sd_val = vals.std() if len(vals) > 1 else 0
+
+            mean_val = mean_val if not np.isnan(mean_val) else 0
+            sd_val = sd_val if not np.isnan(sd_val) else 0
+
+            mean_frac = mean_val / k if k else 0
+            sd_frac = sd_val / k if k else 0
+
+            values.append(mean_frac)
+            low_values.append(max(0.0, mean_frac - sd_frac))
+            high_values.append(min(1.0, mean_frac + sd_frac))
+
+        values += values[:1]
+        low_values += low_values[:1]
+        high_values += high_values[:1]
+
+        # Heavy-duty solid outlines with gorgeous, highly readable translucent fills
+        ax.plot(angles, values, linewidth=4.2, color=color, zorder=4)
+        ax.fill(angles, values, color=color, alpha=0.18, zorder=4)
+
+        # Plot the standard deviation/uncertainty bands around each task series
+        ax.fill_between(angles, low_values, high_values, color=color, alpha=0.07, zorder=3)
+
+    # Plot the random-guess baselines as dashed polygons
+    # Each task's expected random overlap fraction is calculated as: random_fraction = k / N_catalysts.
+    # We will average the random guess fraction over all tasks to draw a clean baseline polygon.
+    random_fractions = []
+    for task in tasks:
+        n_cats = _task_num_catalysts(task)
+        if n_cats:
+            # For each task, expected random overlap is k^2/N. As a fraction of k, this is k/N.
+            task_df = df[df['Task'] == task]
+            k = int(task_df['Top_K'].iloc[0]) if 'Top_K' in task_df.columns else 5
+            random_fractions.append(k / n_cats)
+    
+    if random_fractions:
+        avg_random_fraction = np.mean(random_fractions)
+        baseline_values = [avg_random_fraction] * (N + 1)
+        # Draw a beautiful dashed red regular polygon as the random guess baseline
+        ax.plot(angles, baseline_values, color="#c0392b", linestyle="--", linewidth=2.0, zorder=3)
+
+    fig.tight_layout()
+    fig.savefig(out_path("benchmark2", "benchmark2_star_plots_combined.png"), dpi=300, transparent=True)
+    fig.savefig(out_path("benchmark2", "benchmark2_star_plots_combined.svg"), format='svg', transparent=True)
+    plt.close(fig)
+    print("[+] Benchmark 2 combined star plots saved to output/benchmark2/benchmark2_star_plots_combined.png and .svg")

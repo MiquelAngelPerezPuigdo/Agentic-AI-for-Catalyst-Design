@@ -1,0 +1,24 @@
+Model,Task,Level,Iteration,Top_5_Overlap,Valid_Ligands_Ranked
+gpt-5.5,Pd_CH_Fluorination,Level 1 (Zero-Shot),0,2,18
+gpt-5.5,Pd_CH_Fluorination,Level 1 (Zero-Shot),2,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 1 (Zero-Shot),3,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 1 (Zero-Shot),4,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),0,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),2,2,18
+gpt-5.5,Pd_CH_Fluorination,Level 2 (CoT: Auto-Mechanism),4,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),0,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),3,2,18
+gpt-5.5,Pd_CH_Fluorination,Level 3 (CoT: Mechanism -> Properties),4,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),0,2,18
+gpt-5.5,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),1,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 4 (Supplied Mechanism -> Properties),3,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),0,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),1,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),3,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),2,2,18
+gpt-5.5,Pd_CH_Fluorination,Level 5 (Paper Context Zero-Shot),4,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),2,2,18
+gpt-5.5,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),0,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),1,4,18
+gpt-5.5,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),4,3,18
+gpt-5.5,Pd_CH_Fluorination,Level 6 (Paper Context -> Mechanism -> Properties),3,3,18

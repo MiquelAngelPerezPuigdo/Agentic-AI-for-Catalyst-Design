@@ -251,8 +251,8 @@ MASTER_DATASET_RAW = r"""
 54% CC(C)C1=C(C2=NC(=C(C=C2)OC)O)N=NN1CC3=CC=C(C=C3)C(F)(F)F
 48% COC1=C(N=C(C(=C1)C2=C(C3CCCCC3)N(CC4=CC=C(C=C4)C(F)(F)F)N=N2)O)
 21% CC(C)(C1=NC(=CC=C1)O)C2=CN(CC3=CC=CC=C3)N=N2
-78% Cc1cc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)nc1O     #added manually to test the surrogate's extrapolation on a novel core with a known active substituent pattern
-74% COc1cc(Cl)c(-c2cn(Cc3ccccc3)nn2)nc1O       #added manually to test the surrogate's extrapolation on a novel core with a known active substituent pattern
+78% Cc1cc(C(F)(F)F)c(-c2cn(Cc3ccccc3)nn2)nc1O     #added manually to tune the surrogate's extrapolation on a novel core with a expected active substituent pattern
+74% COc1cc(Cl)c(-c2cn(Cc3ccccc3)nn2)nc1O       #added manually to tune the surrogate's extrapolation on a novel core with a expected active substituent pattern
 """
 
 INITIAL_SEED = r"""
